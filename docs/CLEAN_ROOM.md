@@ -1,5 +1,7 @@
 # Clean-room development policy
 
+[简体中文](CLEAN_ROOM.zh-CN.md)
+
 This is an engineering policy, not legal advice.
 
 ## Allowed inputs

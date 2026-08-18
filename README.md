@@ -1,5 +1,7 @@
 # Neo Bingo
 
+[简体中文](README.zh-CN.md)
+
 Neo Bingo is a new, independent NeoForge mod that implements a multiplayer
 team bingo game mode from a public behavioral specification.
 

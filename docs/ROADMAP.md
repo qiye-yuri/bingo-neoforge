@@ -1,5 +1,7 @@
 # Roadmap
 
+[简体中文](ROADMAP.zh-CN.md)
+
 ## Phase 0 — foundation
 
 - NeoForge project, CI, licensing, clean-room policy, and architecture records.

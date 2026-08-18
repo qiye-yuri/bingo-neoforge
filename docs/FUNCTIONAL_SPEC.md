@@ -1,5 +1,7 @@
 # Functional specification
 
+[简体中文](FUNCTIONAL_SPEC.zh-CN.md)
+
 This document records behavior only. It intentionally contains no upstream
 implementation details.
 

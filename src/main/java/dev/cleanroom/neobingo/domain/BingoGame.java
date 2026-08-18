@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** Server-authoritative aggregate for tile claims and line victory checks. */
+/** 由服务器权威管理格子认领和连线胜利判定的领域聚合。 */
 public final class BingoGame {
     private final BingoCard card;
     private final GameMode mode;

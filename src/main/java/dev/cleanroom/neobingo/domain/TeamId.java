@@ -2,7 +2,7 @@ package dev.cleanroom.neobingo.domain;
 
 import java.util.Objects;
 
-/** Stable identifier for a team within one game. */
+/** 单局游戏内保持稳定的队伍标识。 */
 public record TeamId(String value) {
     public TeamId {
         Objects.requireNonNull(value, "value");

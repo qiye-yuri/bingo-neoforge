@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-/** Immutable square card containing unique objective identifiers. */
+/** 包含唯一目标标识的不可变方形宾果卡。 */
 public final class BingoCard {
     private final int size;
     private final List<ObjectiveId> objectives;

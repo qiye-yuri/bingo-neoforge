@@ -2,7 +2,7 @@ package dev.cleanroom.neobingo.domain;
 
 import java.util.Objects;
 
-/** Stable, loader-independent identifier for a bingo objective. */
+/** 与模组加载器无关且保持稳定的宾果目标标识。 */
 public record ObjectiveId(String value) {
     public ObjectiveId {
         Objects.requireNonNull(value, "value");

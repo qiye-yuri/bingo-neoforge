@@ -1,0 +1,39 @@
+# Roadmap
+
+[简体中文](ROADMAP.zh-CN.md)
+
+## Phase 0 — foundation
+
+- NeoForge project, CI, licensing, clean-room policy, and architecture records.
+- Minimal load test on client and dedicated server.
+
+## Phase 1 — vertical slice
+
+- Team service, 5x5 item-objective card, seed handling, persistence.
+- `/neobingo start`, `join`, `card`, and `end` commands.
+- Standard mode and one independently designed vanilla-compatible card view.
+- GameTests for claim rules, victory, restart, and reconnect.
+
+## Phase 2 — modes and configuration
+
+- Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
+- Versioned JSON schema, validation, data generation, and migration tests.
+
+## Phase 3 — client experience
+
+- Optional NeoForge HUD and card screen with original assets.
+- Explicit protocol negotiation so vanilla clients remain supported.
+
+## Phase 4 — integrations and hardening
+
+- Optional recipe-viewer and voice-chat integrations behind compile-time APIs.
+- Permissions, performance tests, compatibility matrix, and release automation.
+
+## Architecture boundaries
+
+- `domain`: loader-independent rules and immutable state.
+- `application`: commands and use cases.
+- `neoforge`: events, persistence adapters, networking, and lifecycle.
+- `client`: optional screens and rendering only.
+
+Domain tests must not start Minecraft. NeoForge GameTests cover adapter behavior.

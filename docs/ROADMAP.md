@@ -9,6 +9,10 @@
 
 ## Phase 1 — vertical slice
 
+- [x] Loader-independent card generation, team identifiers, standard claims,
+  lockout claims, scoring, and line victory rules.
+- [x] Unit-test coverage for deterministic generation and the initial rule set.
+- [ ] Execute the Gradle test suite in an environment with a working Java trust store.
 - Team service, 5x5 item-objective card, seed handling, persistence.
 - `/neobingo start`, `join`, `card`, and `end` commands.
 - Standard mode and one independently designed vanilla-compatible card view.

@@ -12,7 +12,7 @@
 - [x] Loader-independent card generation, team identifiers, standard claims,
   lockout claims, scoring, and line victory rules.
 - [x] Unit-test coverage for deterministic generation and the initial rule set.
-- [ ] Execute the Gradle test suite in an environment with a working Java trust store.
+- [x] Execute the Gradle test suite with Java 21 and Gradle 9.2.1.
 - Team service, 5x5 item-objective card, seed handling, persistence.
 - `/neobingo start`, `join`, `card`, and `end` commands.
 - Standard mode and one independently designed vanilla-compatible card view.

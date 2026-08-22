@@ -72,6 +72,30 @@ class BingoSessionTest {
         assertTrue(session.winner().isEmpty());
     }
 
+    @Test
+    void rerollPreservesModeAndRosterWhileClearingClaims() {
+        BingoSession session = runningSession();
+        session.claim(PLAYER, 0);
+
+        session.reroll(5, pool(), 99L);
+
+        assertEquals(SessionState.RUNNING, session.state());
+        assertEquals(99L, session.seed().orElseThrow());
+        assertEquals(GameMode.STANDARD, session.game().orElseThrow().mode());
+        assertEquals(RED, session.roster().teamOf(PLAYER).orElseThrow());
+        assertEquals(0, session.game().orElseThrow().score(RED));
+    }
+
+    @Test
+    void lobbyAndFinishedSessionsCannotBeRerolled() {
+        BingoSession lobby = new BingoSession();
+        assertThrows(IllegalStateException.class, () -> lobby.reroll(5, pool(), 1L));
+
+        BingoSession finished = runningSession();
+        finished.end();
+        assertThrows(IllegalStateException.class, () -> finished.reroll(5, pool(), 1L));
+    }
+
     private static BingoSession runningSession() {
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);

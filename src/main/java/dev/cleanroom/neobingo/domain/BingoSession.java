@@ -44,6 +44,14 @@ public final class BingoSession {
         return new SessionClaimResult(outcome, state, winner());
     }
 
+    public void reroll(int cardSize, List<ObjectiveId> objectivePool, long seed) {
+        requireState(SessionState.RUNNING);
+        GameMode mode = game.mode();
+        game = new BingoGame(BingoCard.generate(cardSize, objectivePool, seed), mode);
+        this.seed = seed;
+        winner = null;
+    }
+
     public void end() {
         requireState(SessionState.RUNNING);
         state = SessionState.FINISHED;

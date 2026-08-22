@@ -90,6 +90,20 @@ public final class NeoBingoGameTests {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    public static void rerollKeepsModeAndClearsClaims(GameTestHelper helper) {
+        BingoSession session = lobbyWithTwoTeams();
+        session.start(5, objectives(), 42L, GameMode.LOCKOUT);
+        session.claim(PLAYER, 0);
+
+        session.reroll(5, objectives(), 99L);
+
+        helper.assertValueEqual(session.game().orElseThrow().mode(), GameMode.LOCKOUT, "重新生成应保留游戏模式");
+        helper.assertValueEqual(session.game().orElseThrow().score(RED), 0, "重新生成应清空已有认领");
+        helper.assertValueEqual(session.seed().orElseThrow(), 99L, "重新生成应更新种子");
+        helper.succeed();
+    }
+
     private static BingoSession runningSession() {
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);

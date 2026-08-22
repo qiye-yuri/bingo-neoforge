@@ -33,8 +33,10 @@ Run loader-aware integration tests with:
 ## Commands
 
 - `/neobingo join <team>` joins or changes team while the lobby is open.
+- `/neobingo leave` leaves the current team while the lobby is open.
 - `/neobingo start [seed]` starts a standard 5x5 game (operator only).
 - `/neobingo start <standard|lockout> [seed]` starts an explicitly selected mode (operator only).
+- `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` checks the player's server-side inventory and claims matching objectives.
 - `/neobingo status` displays the current lifecycle, mode, seed, teams, and winner.

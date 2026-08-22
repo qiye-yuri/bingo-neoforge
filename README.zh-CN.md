@@ -31,8 +31,10 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 ## 命令
 
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
+- `/neobingo leave`：在大厅开放期间离开当前队伍。
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，仅管理员可用。
 - `/neobingo start <standard|lockout> [seed]`：明确选择标准或锁定模式并开始游戏，仅管理员可用。
+- `/neobingo reroll [seed]`：保留队伍和模式并重新生成正在运行的卡片，仅管理员可用。
 - `/neobingo card`：在原版聊天栏中显示所在队伍的宾果卡。
 - `/neobingo claim`：检查玩家的服务端物品栏，并认领其中匹配的目标。
 - `/neobingo status`：显示当前阶段、模式、种子、队伍及胜者。

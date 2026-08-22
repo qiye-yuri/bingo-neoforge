@@ -39,6 +39,8 @@ public final class NeoBingoCommands {
                                 .executes(context -> run(context.getSource(), () -> join(
                                         context.getSource(),
                                         StringArgumentType.getString(context, "team"))))))
+                .then(Commands.literal("leave")
+                        .executes(context -> run(context.getSource(), () -> leave(context.getSource()))))
                 .then(Commands.literal("start")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> start(
@@ -52,6 +54,15 @@ public final class NeoBingoCommands {
                                         GameMode.STANDARD))))
                         .then(modeStartCommand("standard", GameMode.STANDARD))
                         .then(modeStartCommand("lockout", GameMode.LOCKOUT)))
+                .then(Commands.literal("reroll")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(context -> run(context.getSource(), () -> reroll(
+                                context.getSource(),
+                                context.getSource().getLevel().getRandom().nextLong())))
+                        .then(Commands.argument("seed", LongArgumentType.longArg())
+                                .executes(context -> run(context.getSource(), () -> reroll(
+                                        context.getSource(),
+                                        LongArgumentType.getLong(context, "seed"))))))
                 .then(Commands.literal("card")
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
                 .then(Commands.literal("claim")
@@ -90,6 +101,19 @@ public final class NeoBingoCommands {
                                 mode))));
     }
 
+    private static void leave(CommandSourceStack source) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        PlayerId playerId = new PlayerId(player.getUUID());
+        if (session.roster().teamOf(playerId).isEmpty()) {
+            throw new IllegalStateException("你尚未加入队伍");
+        }
+        session.leave(playerId);
+        data.store(session);
+        source.sendSuccess(() -> Component.literal("已离开当前队伍"), false);
+    }
+
     private static void start(CommandSourceStack source, long seed, GameMode mode) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
@@ -98,6 +122,15 @@ public final class NeoBingoCommands {
         data.store(session);
         source.sendSuccess(() -> Component.literal(
                 "宾果游戏已开始，模式：" + modeName(mode) + "，种子：" + seed), true);
+    }
+
+    private static void reroll(CommandSourceStack source, long seed) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.reroll(definition.size(), definition.objectives(), seed);
+        data.store(session);
+        source.sendSuccess(() -> Component.literal("已重新生成宾果卡，种子：" + seed), true);
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {

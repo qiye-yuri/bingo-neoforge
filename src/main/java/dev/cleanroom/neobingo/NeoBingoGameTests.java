@@ -9,12 +9,15 @@ import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
@@ -59,7 +62,7 @@ public final class NeoBingoGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty", batch = "worldDataRecovery")
     public static void worldDataRestoresReconnectIdentity(GameTestHelper helper) {
         NeoBingoSavedData data = NeoBingoSavedData.get(helper.getLevel().getServer());
         data.clear();
@@ -101,6 +104,29 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(session.game().orElseThrow().mode(), GameMode.LOCKOUT, "重新生成应保留游戏模式");
         helper.assertValueEqual(session.game().orElseThrow().score(RED), 0, "重新生成应清空已有认领");
         helper.assertValueEqual(session.seed().orElseThrow(), 99L, "重新生成应更新种子");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty", batch = "inventoryTicker")
+    @SuppressWarnings("removal")
+    public static void serverTickClaimsInventoryObjectives(GameTestHelper helper) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(helper.getLevel().getServer());
+        data.clear();
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getInventory().add(Items.STONE.getDefaultInstance());
+        PlayerId playerId = new PlayerId(player.getUUID());
+        List<ObjectiveId> pool = new ArrayList<>(objectives());
+        pool.set(0, new ObjectiveId("minecraft:stone"));
+        BingoSession session = new BingoSession();
+        session.join(playerId, RED);
+        session.start(5, pool, 42L, GameMode.STANDARD);
+        data.store(session);
+
+        InventoryClaimTicker.evaluatePlayers(helper.getLevel().getServer(), List.of(player));
+
+        BingoSession restored = data.restoreSession().orElseThrow();
+        helper.assertValueEqual(restored.game().orElseThrow().score(RED), 1, "服务端轮询应自动认领物品栏目标");
+        data.clear();
         helper.succeed();
     }
 

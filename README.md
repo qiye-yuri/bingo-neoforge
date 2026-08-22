@@ -38,11 +38,13 @@ Run loader-aware integration tests with:
 - `/neobingo start <standard|lockout> [seed]` starts an explicitly selected mode (operator only).
 - `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
-- `/neobingo claim` checks the player's server-side inventory and claims matching objectives.
+- `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.
 - `/neobingo status` displays the current lifecycle, mode, seed, teams, and winner.
 - `/neobingo end` ends the running game (operator only).
 
 After a game ends, the first player to join creates a new lobby.
+During a running game, the server also checks online team members' inventories
+once per second and automatically claims new matching objectives.
 
 ## Clean-room rule
 

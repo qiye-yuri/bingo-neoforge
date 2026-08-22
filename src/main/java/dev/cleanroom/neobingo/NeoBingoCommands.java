@@ -11,18 +11,13 @@ import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.GameMode;
-import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -158,16 +153,10 @@ public final class NeoBingoCommands {
         ServerPlayer player = source.getPlayerOrException();
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
-        Set<ObjectiveId> inventoryObjectives = IntStream.range(0, player.getInventory().getContainerSize())
-                .mapToObj(player.getInventory()::getItem)
-                .filter(stack -> !stack.isEmpty())
-                .map(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()))
-                .map(key -> new ObjectiveId(key.toString()))
-                .collect(Collectors.toUnmodifiableSet());
         ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
                 session,
                 new PlayerId(player.getUUID()),
-                inventoryObjectives);
+                ServerInventoryObjectiveReader.read(player));
         if (result.claimedTiles().isEmpty()) {
             source.sendSuccess(() -> Component.literal("物品栏中没有可新认领的目标"), false);
             return;

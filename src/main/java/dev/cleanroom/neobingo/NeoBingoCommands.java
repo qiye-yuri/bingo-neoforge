@@ -3,6 +3,8 @@ package dev.cleanroom.neobingo;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import dev.cleanroom.neobingo.application.ClaimBatchResult;
+import dev.cleanroom.neobingo.application.ObjectiveClaimService;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.GameMode;
@@ -13,6 +15,9 @@ import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -46,6 +51,8 @@ public final class NeoBingoCommands {
                                         LongArgumentType.getLong(context, "seed"))))))
                 .then(Commands.literal("card")
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
+                .then(Commands.literal("claim")
+                        .executes(context -> run(context.getSource(), () -> claim(context.getSource()))))
                 .then(Commands.literal("end")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> end(context.getSource())))));
@@ -90,6 +97,34 @@ public final class NeoBingoCommands {
         session.end();
         data.store(session);
         source.sendSuccess(() -> Component.literal("宾果游戏已结束"), true);
+    }
+
+    private static void claim(CommandSourceStack source) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        Set<ObjectiveId> inventoryObjectives = IntStream.range(0, player.getInventory().getContainerSize())
+                .mapToObj(player.getInventory()::getItem)
+                .filter(stack -> !stack.isEmpty())
+                .map(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()))
+                .map(key -> new ObjectiveId(key.toString()))
+                .collect(Collectors.toUnmodifiableSet());
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session,
+                new PlayerId(player.getUUID()),
+                inventoryObjectives);
+        if (result.claimedTiles().isEmpty()) {
+            source.sendSuccess(() -> Component.literal("物品栏中没有可新认领的目标"), false);
+            return;
+        }
+
+        data.store(session);
+        source.sendSuccess(
+                () -> Component.literal("已为队伍认领 " + result.claimedTiles().size() + " 个格子"),
+                true);
+        result.winner().ifPresent(team -> source.sendSuccess(
+                () -> Component.literal("队伍 " + team.value() + " 完成连线并获胜"),
+                true));
     }
 
     private static BingoSession requiredSession(NeoBingoSavedData data) {

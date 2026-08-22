@@ -29,6 +29,7 @@ The first build downloads Minecraft and NeoForge dependencies.
 - `/neobingo join <team>` joins or changes team while the lobby is open.
 - `/neobingo start [seed]` starts a standard 5x5 game (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
+- `/neobingo claim` checks the player's server-side inventory and claims matching objectives.
 - `/neobingo end` ends the running game (operator only).
 
 After a game ends, the first player to join creates a new lobby.

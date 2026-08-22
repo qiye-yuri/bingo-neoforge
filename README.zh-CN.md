@@ -27,6 +27,7 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，仅管理员可用。
 - `/neobingo card`：在原版聊天栏中显示所在队伍的宾果卡。
+- `/neobingo claim`：检查玩家的服务端物品栏，并认领其中匹配的目标。
 - `/neobingo end`：结束正在运行的游戏，仅管理员可用。
 
 游戏结束后，首位执行加入命令的玩家会创建一个新大厅。

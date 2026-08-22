@@ -20,6 +20,7 @@
 - [x] NeoForge world-save storage adapter for 5x5 item-objective sessions.
 - [x] `/neobingo start`, `join`, `card`, and `end` commands.
 - [x] Standard mode and one independently designed vanilla-compatible card view.
+- [x] Server-authoritative inventory checks for manually claiming item objectives.
 - GameTests for claim rules, victory, restart, and reconnect.
 
 ## Phase 2 — modes and configuration

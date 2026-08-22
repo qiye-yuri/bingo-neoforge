@@ -54,6 +54,18 @@ public final class BingoCard {
         return objectives;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof BingoCard card
+                && size == card.size
+                && objectives.equals(card.objectives);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(size, objectives);
+    }
+
     int checkedIndex(int tileIndex) {
         if (tileIndex < 0 || tileIndex >= tileCount()) {
             throw new IndexOutOfBoundsException("Invalid tile index: " + tileIndex);

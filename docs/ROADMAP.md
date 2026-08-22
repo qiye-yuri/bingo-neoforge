@@ -17,7 +17,7 @@
 - [x] Automatic line-victory completion and operator-triggered game termination.
 - [x] Immutable snapshots for cards, claims, rosters, lifecycle state, seeds, and winners.
 - [x] Validated in-memory restart recovery for running and finished sessions.
-- NeoForge world-save storage adapter for 5x5 item-objective sessions.
+- [x] NeoForge world-save storage adapter for 5x5 item-objective sessions.
 - `/neobingo start`, `join`, `card`, and `end` commands.
 - Standard mode and one independently designed vanilla-compatible card view.
 - GameTests for claim rules, victory, restart, and reconnect.

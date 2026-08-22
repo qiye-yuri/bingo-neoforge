@@ -25,6 +25,7 @@
 
 ## Phase 2 — modes and configuration
 
+- [x] Versioned and strictly validated data-pack definition for the default card pool.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - Versioned JSON schema, validation, data generation, and migration tests.
 

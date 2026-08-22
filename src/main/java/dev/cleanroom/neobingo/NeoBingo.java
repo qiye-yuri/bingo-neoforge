@@ -1,6 +1,7 @@
 package dev.cleanroom.neobingo;
 
 import com.mojang.logging.LogUtils;
+import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -14,6 +15,7 @@ public final class NeoBingo {
 
     public NeoBingo(IEventBus modBus, ModContainer container) {
         modBus.addListener(NeoBingoGameTests::register);
+        NeoForge.EVENT_BUS.addListener(BingoCardDefinitions::registerReloadListener);
         NeoForge.EVENT_BUS.addListener(NeoBingoCommands::register);
         LOGGER.info("Neo Bingo initialized");
     }

@@ -53,3 +53,5 @@ clean-room records.
 ## Roadmap
 
 See `docs/ROADMAP.md` and `docs/FUNCTIONAL_SPEC.md`.
+
+Data-pack authors should also see `docs/CARD_DEFINITIONS.md`.

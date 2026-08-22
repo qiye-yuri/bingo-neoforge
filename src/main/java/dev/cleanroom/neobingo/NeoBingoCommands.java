@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.cleanroom.neobingo.application.ClaimBatchResult;
 import dev.cleanroom.neobingo.application.ObjectiveClaimService;
+import dev.cleanroom.neobingo.config.BingoCardDefinition;
+import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.GameMode;
@@ -12,9 +14,8 @@ import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
-import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
-import java.util.List;
+import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,13 +24,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /** 注册并执行服务器权威的宾果命令。 */
 public final class NeoBingoCommands {
-    private static final int CARD_SIZE = 5;
-
     private NeoBingoCommands() {
     }
 
@@ -73,7 +71,8 @@ public final class NeoBingoCommands {
     private static void start(CommandSourceStack source, long seed) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
-        session.start(CARD_SIZE, objectivePool(), seed, GameMode.STANDARD);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.start(definition.size(), definition.objectives(), seed, GameMode.STANDARD);
         data.store(session);
         source.sendSuccess(() -> Component.literal("宾果游戏已开始，种子：" + seed), true);
     }
@@ -129,13 +128,6 @@ public final class NeoBingoCommands {
 
     private static BingoSession requiredSession(NeoBingoSavedData data) {
         return data.restoreSession().orElseThrow(() -> new IllegalStateException("尚未创建宾果大厅"));
-    }
-
-    private static List<ObjectiveId> objectivePool() {
-        return BuiltInRegistries.ITEM.keySet().stream()
-                .filter(key -> BuiltInRegistries.ITEM.get(key) != Items.AIR)
-                .map(key -> new ObjectiveId(key.toString()))
-                .toList();
     }
 
     private static int run(CommandSourceStack source, CommandAction action) {

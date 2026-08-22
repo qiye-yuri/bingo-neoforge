@@ -48,6 +48,8 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 
 请参阅 [`docs/ROADMAP.zh-CN.md`](docs/ROADMAP.zh-CN.md) 和 [`docs/FUNCTIONAL_SPEC.zh-CN.md`](docs/FUNCTIONAL_SPEC.zh-CN.md)。
 
+数据包作者还应阅读 [`docs/CARD_DEFINITIONS.zh-CN.md`](docs/CARD_DEFINITIONS.zh-CN.md)。
+
 ## 许可证
 
 项目原创代码采用 MIT License。第三方组件继续适用其各自的许可证。若中文说明与英文许可证正文存在冲突，以英文许可证正文为准。

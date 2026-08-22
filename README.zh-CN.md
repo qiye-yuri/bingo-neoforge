@@ -22,6 +22,12 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 
 首次构建会下载 Minecraft 和 NeoForge 依赖。
 
+使用以下命令运行包含模组加载器和真实世界环境的集成测试：
+
+```text
+./gradlew runGameTestServer
+```
+
 ## 命令
 
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。

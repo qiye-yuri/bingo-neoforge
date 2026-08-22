@@ -24,6 +24,12 @@ Status: the first playable server-side slice is in development. Team lobbies,
 
 The first build downloads Minecraft and NeoForge dependencies.
 
+Run loader-aware integration tests with:
+
+```text
+./gradlew runGameTestServer
+```
+
 ## Commands
 
 - `/neobingo join <team>` joins or changes team while the lobby is open.

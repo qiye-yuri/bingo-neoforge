@@ -21,7 +21,7 @@
 - [x] `/neobingo start`, `join`, `card`, and `end` commands.
 - [x] Standard mode and one independently designed vanilla-compatible card view.
 - [x] Server-authoritative inventory checks for manually claiming item objectives.
-- GameTests for claim rules, victory, restart, and reconnect.
+- [x] GameTests for claim rules, victory, world-save recovery, and reconnect identity.
 
 ## Phase 2 — modes and configuration
 

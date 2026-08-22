@@ -1,0 +1,84 @@
+package dev.cleanroom.neobingo;
+
+import dev.cleanroom.neobingo.application.ClaimBatchResult;
+import dev.cleanroom.neobingo.application.ObjectiveClaimService;
+import dev.cleanroom.neobingo.domain.BingoSession;
+import dev.cleanroom.neobingo.domain.GameMode;
+import dev.cleanroom.neobingo.domain.ObjectiveId;
+import dev.cleanroom.neobingo.domain.PlayerId;
+import dev.cleanroom.neobingo.domain.SessionState;
+import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.IntStream;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+
+/** 在真实服务端关卡中验证核心规则与世界存档适配器的协作。 */
+@PrefixGameTestTemplate(false)
+public final class NeoBingoGameTests {
+    private static final PlayerId PLAYER =
+            new PlayerId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+    private static final TeamId RED = new TeamId("red");
+
+    private NeoBingoGameTests() {
+    }
+
+    public static void register(RegisterGameTestsEvent event) {
+        event.register(NeoBingoGameTests.class);
+    }
+
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    public static void serverObservedObjectivesAreClaimed(GameTestHelper helper) {
+        BingoSession session = runningSession();
+        ObjectiveId objective = session.game().orElseThrow().card().objectiveAt(3);
+
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, Set.of(objective));
+
+        helper.assertValueEqual(result.claimedTiles(), List.of(3), "服务端观察到的目标应认领对应格子");
+        helper.assertValueEqual(session.game().orElseThrow().score(RED), 1, "队伍分数应随认领增加");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    public static void completedLineFinishesGame(GameTestHelper helper) {
+        BingoSession session = runningSession();
+        Set<ObjectiveId> firstRow = Set.copyOf(session.game().orElseThrow().card().objectives().subList(0, 5));
+
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, firstRow);
+
+        helper.assertValueEqual(result.state(), SessionState.FINISHED, "完成连线后游戏应结束");
+        helper.assertValueEqual(result.winner().orElseThrow(), RED, "完成连线的队伍应获胜");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    public static void worldDataRestoresReconnectIdentity(GameTestHelper helper) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(helper.getLevel().getServer());
+        data.clear();
+        BingoSession session = runningSession();
+        session.claim(PLAYER, 2);
+        data.store(session);
+
+        BingoSession restored = data.restoreSession().orElseThrow();
+
+        helper.assertValueEqual(restored.roster().teamOf(PLAYER).orElseThrow(), RED, "重连玩家应恢复原队伍");
+        helper.assertTrue(restored.game().orElseThrow().isClaimedBy(RED, 2), "世界存档应恢复已认领格子");
+        data.clear();
+        helper.succeed();
+    }
+
+    private static BingoSession runningSession() {
+        List<ObjectiveId> objectives = IntStream.range(0, 25)
+                .mapToObj(index -> new ObjectiveId("minecraft:test_item_" + index))
+                .toList();
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
+        session.start(5, objectives, 42L, GameMode.STANDARD);
+        return session;
+    }
+}

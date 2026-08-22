@@ -13,6 +13,7 @@ public final class NeoBingo {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public NeoBingo(IEventBus modBus, ModContainer container) {
+        modBus.addListener(NeoBingoGameTests::register);
         NeoForge.EVENT_BUS.addListener(NeoBingoCommands::register);
         LOGGER.info("Neo Bingo initialized");
     }

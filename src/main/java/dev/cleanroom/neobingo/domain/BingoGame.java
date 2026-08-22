@@ -43,6 +43,14 @@ public final class BingoGame {
         return (int) claims.values().stream().filter(teams -> teams.contains(team)).count();
     }
 
+    public BingoCard card() {
+        return card;
+    }
+
+    public GameMode mode() {
+        return mode;
+    }
+
     public boolean hasWinningLine(TeamId team) {
         Objects.requireNonNull(team, "team");
         int size = card.size();

@@ -13,7 +13,9 @@
   lockout claims, scoring, and line victory rules.
 - [x] Unit-test coverage for deterministic generation and the initial rule set.
 - [x] Execute the Gradle test suite with Java 21 and Gradle 9.2.1.
-- Team service, 5x5 item-objective card, seed handling, persistence.
+- [x] Team membership service and lobby/running/finished session lifecycle.
+- [x] Automatic line-victory completion and operator-triggered game termination.
+- 5x5 item-objective persistence and restart recovery.
 - `/neobingo start`, `join`, `card`, and `end` commands.
 - Standard mode and one independently designed vanilla-compatible card view.
 - GameTests for claim rules, victory, restart, and reconnect.

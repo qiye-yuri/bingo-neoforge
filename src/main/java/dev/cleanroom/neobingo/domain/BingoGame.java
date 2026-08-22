@@ -2,6 +2,7 @@ package dev.cleanroom.neobingo.domain;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -49,6 +50,24 @@ public final class BingoGame {
 
     public GameMode mode() {
         return mode;
+    }
+
+    public BingoGameSnapshot snapshot() {
+        Map<Integer, Set<TeamId>> copiedClaims = new LinkedHashMap<>();
+        claims.forEach((tileIndex, teams) -> copiedClaims.put(tileIndex, Set.copyOf(teams)));
+        return new BingoGameSnapshot(card, mode, copiedClaims);
+    }
+
+    public static BingoGame restore(BingoGameSnapshot snapshot) {
+        Objects.requireNonNull(snapshot, "snapshot");
+        BingoGame restored = new BingoGame(snapshot.card(), snapshot.mode());
+        snapshot.claims().forEach((tileIndex, teams) -> teams.forEach(team -> {
+            ClaimOutcome outcome = restored.claim(team, tileIndex);
+            if (outcome != ClaimOutcome.CLAIMED) {
+                throw new IllegalArgumentException("Snapshot contains conflicting claims");
+            }
+        }));
+        return restored;
     }
 
     public boolean hasWinningLine(TeamId team) {

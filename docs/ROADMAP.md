@@ -15,7 +15,9 @@
 - [x] Execute the Gradle test suite with Java 21 and Gradle 9.2.1.
 - [x] Team membership service and lobby/running/finished session lifecycle.
 - [x] Automatic line-victory completion and operator-triggered game termination.
-- 5x5 item-objective persistence and restart recovery.
+- [x] Immutable snapshots for cards, claims, rosters, lifecycle state, seeds, and winners.
+- [x] Validated in-memory restart recovery for running and finished sessions.
+- NeoForge world-save storage adapter for 5x5 item-objective sessions.
 - `/neobingo start`, `join`, `card`, and `end` commands.
 - Standard mode and one independently designed vanilla-compatible card view.
 - GameTests for claim rules, victory, restart, and reconnect.

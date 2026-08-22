@@ -69,6 +69,30 @@ public final class BingoSession {
         return Optional.ofNullable(winner);
     }
 
+    public BingoSessionSnapshot snapshot() {
+        return new BingoSessionSnapshot(
+                state,
+                roster.assignments(),
+                game == null ? Optional.empty() : Optional.of(game.snapshot()),
+                seed(),
+                winner());
+    }
+
+    public static BingoSession restore(BingoSessionSnapshot snapshot) {
+        Objects.requireNonNull(snapshot, "snapshot");
+        BingoSession restored = new BingoSession();
+        snapshot.assignments().forEach(restored.roster::join);
+        restored.state = snapshot.state();
+        restored.game = snapshot.game().map(BingoGame::restore).orElse(null);
+        restored.seed = snapshot.seed().orElse(0L);
+        restored.winner = snapshot.winner().orElse(null);
+
+        if (restored.winner != null && !restored.game.hasWinningLine(restored.winner)) {
+            throw new IllegalArgumentException("Winner does not have a completed line");
+        }
+        return restored;
+    }
+
     private void requireState(SessionState expected) {
         Objects.requireNonNull(expected, "expected");
         if (state != expected) {

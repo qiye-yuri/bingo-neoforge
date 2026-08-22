@@ -2,6 +2,7 @@ package dev.cleanroom.neobingo;
 
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.cleanroom.neobingo.application.ClaimBatchResult;
 import dev.cleanroom.neobingo.application.ObjectiveClaimService;
@@ -42,15 +43,21 @@ public final class NeoBingoCommands {
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
-                                context.getSource().getLevel().getRandom().nextLong())))
+                                context.getSource().getLevel().getRandom().nextLong(),
+                                GameMode.STANDARD)))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> run(context.getSource(), () -> start(
                                         context.getSource(),
-                                        LongArgumentType.getLong(context, "seed"))))))
+                                        LongArgumentType.getLong(context, "seed"),
+                                        GameMode.STANDARD))))
+                        .then(modeStartCommand("standard", GameMode.STANDARD))
+                        .then(modeStartCommand("lockout", GameMode.LOCKOUT)))
                 .then(Commands.literal("card")
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
                 .then(Commands.literal("claim")
                         .executes(context -> run(context.getSource(), () -> claim(context.getSource()))))
+                .then(Commands.literal("status")
+                        .executes(context -> run(context.getSource(), () -> showStatus(context.getSource()))))
                 .then(Commands.literal("end")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> end(context.getSource())))));
@@ -68,13 +75,29 @@ public final class NeoBingoCommands {
         source.sendSuccess(() -> Component.literal("已加入队伍 " + team.value()), false);
     }
 
-    private static void start(CommandSourceStack source, long seed) {
+    private static LiteralArgumentBuilder<CommandSourceStack> modeStartCommand(
+            String name,
+            GameMode mode) {
+        return Commands.literal(name)
+                .executes(context -> run(context.getSource(), () -> start(
+                        context.getSource(),
+                        context.getSource().getLevel().getRandom().nextLong(),
+                        mode)))
+                .then(Commands.argument("seed", LongArgumentType.longArg())
+                        .executes(context -> run(context.getSource(), () -> start(
+                                context.getSource(),
+                                LongArgumentType.getLong(context, "seed"),
+                                mode))));
+    }
+
+    private static void start(CommandSourceStack source, long seed, GameMode mode) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
-        session.start(definition.size(), definition.objectives(), seed, GameMode.STANDARD);
+        session.start(definition.size(), definition.objectives(), seed, mode);
         data.store(session);
-        source.sendSuccess(() -> Component.literal("宾果游戏已开始，种子：" + seed), true);
+        source.sendSuccess(() -> Component.literal(
+                "宾果游戏已开始，模式：" + modeName(mode) + "，种子：" + seed), true);
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {
@@ -124,6 +147,34 @@ public final class NeoBingoCommands {
         result.winner().ifPresent(team -> source.sendSuccess(
                 () -> Component.literal("队伍 " + team.value() + " 完成连线并获胜"),
                 true));
+    }
+
+    private static void showStatus(CommandSourceStack source) {
+        BingoSession session = requiredSession(NeoBingoSavedData.get(source.getServer()));
+        long teamCount = session.roster().assignments().values().stream().distinct().count();
+        StringBuilder status = new StringBuilder("宾果状态：")
+                .append(stateName(session.state()))
+                .append("，玩家：").append(session.roster().playerCount())
+                .append("，队伍：").append(teamCount);
+        session.game().ifPresent(game -> status.append("，模式：").append(modeName(game.mode())));
+        session.seed().ifPresent(seed -> status.append("，种子：").append(seed));
+        session.winner().ifPresent(winner -> status.append("，胜者：").append(winner.value()));
+        source.sendSuccess(() -> Component.literal(status.toString()), false);
+    }
+
+    private static String modeName(GameMode mode) {
+        return switch (mode) {
+            case STANDARD -> "标准";
+            case LOCKOUT -> "锁定";
+        };
+    }
+
+    private static String stateName(SessionState state) {
+        return switch (state) {
+            case LOBBY -> "大厅";
+            case RUNNING -> "进行中";
+            case FINISHED -> "已结束";
+        };
     }
 
     private static BingoSession requiredSession(NeoBingoSavedData data) {

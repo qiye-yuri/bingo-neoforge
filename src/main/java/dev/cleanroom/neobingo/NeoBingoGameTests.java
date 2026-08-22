@@ -23,7 +23,10 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 public final class NeoBingoGameTests {
     private static final PlayerId PLAYER =
             new PlayerId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+    private static final PlayerId SECOND_PLAYER =
+            new PlayerId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
     private static final TeamId RED = new TeamId("red");
+    private static final TeamId BLUE = new TeamId("blue");
 
     private NeoBingoGameTests() {
     }
@@ -72,13 +75,38 @@ public final class NeoBingoGameTests {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
+    public static void lockoutPreventsSecondTeamClaim(GameTestHelper helper) {
+        BingoSession session = lobbyWithTwoTeams();
+        session.start(5, objectives(), 42L, GameMode.LOCKOUT);
+        ObjectiveId objective = session.game().orElseThrow().card().objectiveAt(0);
+
+        ObjectiveClaimService.claimCompleted(session, PLAYER, Set.of(objective));
+        ClaimBatchResult secondResult =
+                ObjectiveClaimService.claimCompleted(session, SECOND_PLAYER, Set.of(objective));
+
+        helper.assertTrue(secondResult.claimedTiles().isEmpty(), "锁定格子不应被第二支队伍认领");
+        helper.assertFalse(session.game().orElseThrow().isClaimedBy(BLUE, 0), "第二支队伍不应拥有锁定格子");
+        helper.succeed();
+    }
+
     private static BingoSession runningSession() {
-        List<ObjectiveId> objectives = IntStream.range(0, 25)
-                .mapToObj(index -> new ObjectiveId("minecraft:test_item_" + index))
-                .toList();
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);
-        session.start(5, objectives, 42L, GameMode.STANDARD);
+        session.start(5, objectives(), 42L, GameMode.STANDARD);
         return session;
+    }
+
+    private static BingoSession lobbyWithTwoTeams() {
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
+        session.join(SECOND_PLAYER, BLUE);
+        return session;
+    }
+
+    private static List<ObjectiveId> objectives() {
+        return IntStream.range(0, 25)
+                .mapToObj(index -> new ObjectiveId("minecraft:test_item_" + index))
+                .toList();
     }
 }

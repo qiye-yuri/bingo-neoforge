@@ -26,6 +26,7 @@
 ## Phase 2 — modes and configuration
 
 - [x] Versioned and strictly validated data-pack definition for the default card pool.
+- [x] Playable standard and lockout modes selectable from server commands.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - Versioned JSON schema, validation, data generation, and migration tests.
 

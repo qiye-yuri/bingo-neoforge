@@ -2,6 +2,9 @@ package dev.cleanroom.neobingo.network;
 
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.server.level.ServerPlayer;
+import dev.cleanroom.neobingo.domain.BingoGame;
+import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -20,6 +23,10 @@ public final class NeoBingoNetwork {
                 .playToClient(
                         ProtocolVersionPayload.TYPE,
                         ProtocolVersionPayload.STREAM_CODEC,
+                        (payload, context) -> ClientProtocolState.accept(payload))
+                .playToClient(
+                        BingoCardPayload.TYPE,
+                        BingoCardPayload.STREAM_CODEC,
                         (payload, context) -> ClientProtocolState.accept(payload));
     }
 
@@ -35,5 +42,16 @@ public final class NeoBingoNetwork {
         PacketDistributor.sendToPlayer(
                 player,
                 new ProtocolVersionPayload(ProtocolVersionPayload.CURRENT_VERSION));
+    }
+
+    public static void sendCardIfSupported(ServerPlayer player, BingoGame game, TeamId team) {
+        var setup = ChannelAttributes.getPayloadSetup(player.connection.getConnection());
+        if (setup == null || setup.getChannel(ConnectionProtocol.PLAY, BingoCardPayload.TYPE.id()) == null) {
+            return;
+        }
+        PacketDistributor.sendToPlayer(player, new BingoCardPayload(
+                team.value(),
+                game.mode().name(),
+                BingoCardTextRenderer.render(game, team)));
     }
 }

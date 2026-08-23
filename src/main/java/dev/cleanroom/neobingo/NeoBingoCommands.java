@@ -17,6 +17,7 @@ import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -162,6 +163,8 @@ public final class NeoBingoCommands {
         BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
         TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
                 .orElseThrow(() -> new IllegalStateException("你尚未加入队伍"));
+
+        NeoBingoNetwork.sendCardIfSupported(player, game, team);
 
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.card.title", team.value()), false);
         for (String line : BingoCardTextRenderer.render(game, team)) {

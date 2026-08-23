@@ -29,6 +29,7 @@
   "mod.neo_bingo.name": "Neo Bingo",
   "key.categories.neo_bingo": "Neo Bingo",
   "key.neo_bingo.open_card": "打开宾果卡",
+  "key.neo_bingo.toggle_hud": "切换宾果 HUD",
   "screen.neo_bingo.card": "宾果卡",
   "screen.neo_bingo.card.title": "队伍 %s · %s"
 }

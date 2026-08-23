@@ -11,9 +11,14 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 @EventBusSubscriber(modid = NeoBingo.MOD_ID, value = Dist.CLIENT)
 public final class ClientKeyMappings {
     private static final int DEFAULT_CARD_KEY = 66;
+    private static final int DEFAULT_HUD_KEY = 72;
     public static final KeyMapping OPEN_CARD = new KeyMapping(
             "key.neo_bingo.open_card",
             DEFAULT_CARD_KEY,
+            "key.categories.neo_bingo");
+    public static final KeyMapping TOGGLE_HUD = new KeyMapping(
+            "key.neo_bingo.toggle_hud",
+            DEFAULT_HUD_KEY,
             "key.categories.neo_bingo");
 
     private ClientKeyMappings() {
@@ -22,5 +27,6 @@ public final class ClientKeyMappings {
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_CARD);
+        event.register(TOGGLE_HUD);
     }
 }

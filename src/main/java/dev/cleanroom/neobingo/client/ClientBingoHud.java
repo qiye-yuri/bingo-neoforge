@@ -27,7 +27,7 @@ public final class ClientBingoHud {
     @SubscribeEvent
     public static void render(RenderGuiEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.options.hideGui) {
+        if (minecraft.level == null || minecraft.options.hideGui || !ClientProtocolState.hudVisible()) {
             return;
         }
         ClientProtocolState.latestCard().ifPresent(card -> draw(event.getGuiGraphics(), minecraft.font,
@@ -44,6 +44,9 @@ public final class ClientBingoHud {
         Minecraft minecraft = Minecraft.getInstance();
         while (ClientKeyMappings.OPEN_CARD.consumeClick()) {
             ClientProtocolState.latestCard().ifPresent(card -> minecraft.setScreen(new BingoCardScreen(card)));
+        }
+        while (ClientKeyMappings.TOGGLE_HUD.consumeClick()) {
+            ClientProtocolState.toggleHud();
         }
     }
 

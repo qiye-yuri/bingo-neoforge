@@ -39,6 +39,7 @@ public final class BingoCardScreen extends Screen {
                 Component.translatable("screen.neo_bingo.card.title", card.team(), card.mode()),
                 this.width / 2, top + 10, BORDER);
         int cellWidth = width / columns;
+        String hovered = null;
         for (int rowIndex = 0; rowIndex < grid.size(); rowIndex++) {
             String[] row = grid.get(rowIndex);
             for (int column = 0; column < row.length; column++) {
@@ -50,9 +51,16 @@ public final class BingoCardScreen extends Screen {
                         cellLeft + cellWidth - 1, cellTop + CELL_HEIGHT - 1, color);
                 String visible = font.plainSubstrByWidth(value, Math.max(1, cellWidth - 8));
                 graphics.drawString(font, visible, cellLeft + 4, cellTop + 10, TEXT, false);
+                if (mouseX >= cellLeft && mouseX < cellLeft + cellWidth
+                        && mouseY >= cellTop && mouseY < cellTop + CELL_HEIGHT) {
+                    hovered = value;
+                }
             }
         }
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (hovered != null) {
+            graphics.renderTooltip(font, Component.literal(hovered), mouseX, mouseY);
+        }
     }
 
     @Override

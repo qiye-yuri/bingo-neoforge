@@ -6,6 +6,7 @@ import java.util.Optional;
 public final class ClientProtocolState {
     private static volatile int negotiatedVersion;
     private static volatile BingoCardPayload latestCard;
+    private static volatile boolean hudVisible = true;
 
     private ClientProtocolState() {
     }
@@ -29,5 +30,14 @@ public final class ClientProtocolState {
     public static void clear() {
         negotiatedVersion = 0;
         latestCard = null;
+        hudVisible = true;
+    }
+
+    public static boolean hudVisible() {
+        return hudVisible;
+    }
+
+    public static void toggleHud() {
+        hudVisible = !hudVisible;
     }
 }

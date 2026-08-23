@@ -34,5 +34,18 @@ class ProtocolVersionPayloadTest {
 
         assertEquals(0, ClientProtocolState.negotiatedVersion());
         assertEquals(java.util.Optional.empty(), ClientProtocolState.latestCard());
+        assertEquals(true, ClientProtocolState.hudVisible());
+    }
+
+    @Test
+    void clientCanToggleHudWithoutDiscardingCard() {
+        BingoCardPayload card = new BingoCardPayload("red", "STANDARD", java.util.List.of("row"));
+        ClientProtocolState.clear();
+        ClientProtocolState.accept(card);
+
+        ClientProtocolState.toggleHud();
+
+        assertEquals(false, ClientProtocolState.hudVisible());
+        assertEquals(card, ClientProtocolState.latestCard().orElseThrow());
     }
 }

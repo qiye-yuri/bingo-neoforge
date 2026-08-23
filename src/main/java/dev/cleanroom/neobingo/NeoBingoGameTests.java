@@ -135,6 +135,26 @@ public final class NeoBingoGameTests {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty", batch = "rankedTicker")
+    public static void rankedTickerFinishesAndPersistsSession(GameTestHelper helper) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(helper.getLevel().getServer());
+        data.clear();
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
+        session.startRanked(5, objectives(), 42L, 1);
+        session.claim(PLAYER, 0);
+        data.store(session);
+
+        helper.assertTrue(RankedCountdownTicker.tick(helper.getLevel().getServer()), "倒计时到期应结束排位游戏");
+
+        BingoSession restored = data.restoreSession().orElseThrow();
+        helper.assertValueEqual(restored.state(), SessionState.FINISHED, "排位结束状态应写回世界数据");
+        helper.assertValueEqual(restored.remainingTicks().orElseThrow(), 0L, "到期后的剩余时间应为零");
+        helper.assertValueEqual(restored.winner().orElseThrow(), RED, "唯一最高分队伍应成为胜者");
+        data.clear();
+        helper.succeed();
+    }
+
     private static BingoSession runningSession() {
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);

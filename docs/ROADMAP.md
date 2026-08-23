@@ -38,6 +38,7 @@
 - [x] Compose ranked-mode domain rules without premature line completion.
 - [x] Persistent ranked countdown and unique score-leader resolution in domain snapshots and NBT.
 - [x] Complete ranked mode with a persistent time limit, server ticking, and command entry point.
+- [x] GameTest coverage for ranked expiration and world-data persistence.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
 - [x] Bingo-card definition generator with strict round-trip validation and a Gradle entry point.

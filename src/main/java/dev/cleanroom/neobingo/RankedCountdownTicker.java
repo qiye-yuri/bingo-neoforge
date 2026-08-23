@@ -14,18 +14,21 @@ public final class RankedCountdownTicker {
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
-        MinecraftServer server = event.getServer();
+        tick(event.getServer());
+    }
+
+    static boolean tick(MinecraftServer server) {
         NeoBingoSavedData data = NeoBingoSavedData.get(server);
         BingoSession session = data.restoreSession().orElse(null);
         if (session == null
                 || session.state() != SessionState.RUNNING
                 || session.game().orElseThrow().mode() != GameMode.RANKED) {
-            return;
+            return false;
         }
         boolean finished = session.tickRanked();
         data.store(session);
         if (!finished) {
-            return;
+            return false;
         }
         server.getPlayerList().broadcastSystemMessage(
                 Component.translatable("commands.neo_bingo.ranked.finished"), false);
@@ -34,5 +37,6 @@ public final class RankedCountdownTicker {
                         Component.translatable("commands.neo_bingo.win", team.value()), false),
                 () -> server.getPlayerList().broadcastSystemMessage(
                         Component.translatable("commands.neo_bingo.ranked.tie"), false));
+        return true;
     }
 }

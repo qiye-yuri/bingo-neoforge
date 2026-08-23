@@ -1,11 +1,16 @@
 package dev.cleanroom.neobingo.domain;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 
 /** 维护大厅、运行中和已结束三个阶段的单局游戏生命周期。 */
 public final class BingoSession {
+    private static final List<String> RANDOM_TEAM_NAMES = List.of(
+            "red", "blue", "green", "yellow", "purple", "orange", "cyan", "pink");
     private final TeamRoster roster = new TeamRoster();
     private SessionState state = SessionState.LOBBY;
     private BingoGame game;
@@ -21,6 +26,22 @@ public final class BingoSession {
     public void leave(PlayerId player) {
         requireState(SessionState.LOBBY);
         roster.leave(player);
+    }
+
+    public void randomizeTeams(int teamCount, Random random) {
+        requireState(SessionState.LOBBY);
+        Objects.requireNonNull(random, "random");
+        if (teamCount < 2 || teamCount > RANDOM_TEAM_NAMES.size()) {
+            throw new IllegalArgumentException("Team count must be between 2 and 8");
+        }
+        if (roster.playerCount() < teamCount) {
+            throw new IllegalArgumentException("Team count cannot exceed joined player count");
+        }
+        List<PlayerId> players = new ArrayList<>(roster.assignments().keySet());
+        Collections.shuffle(players, random);
+        for (int index = 0; index < players.size(); index++) {
+            roster.join(players.get(index), new TeamId(RANDOM_TEAM_NAMES.get(index % teamCount)));
+        }
     }
 
     public void start(int cardSize, List<ObjectiveId> objectivePool, long seed, GameMode mode) {

@@ -21,6 +21,8 @@ import java.util.List;
 /** 创建并发放使用原版书本界面的 Bingo 游戏设置入口。 */
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
+    private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
+    private static final int BOOK_VERSION = 2;
     private static final int DEFAULT_RANKED_SECONDS = 900;
 
     private BingoSettingsBook() {
@@ -33,8 +35,16 @@ public final class BingoSettingsBook {
     }
 
     public static boolean giveIfMissing(ServerPlayer player) {
-        if (player.getInventory().contains(BingoSettingsBook::isSettingsBook)) {
-            return false;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            ItemStack existing = player.getInventory().getItem(slot);
+            if (!isSettingsBook(existing)) {
+                continue;
+            }
+            if (settingsBookVersion(existing) >= BOOK_VERSION) {
+                return false;
+            }
+            player.getInventory().setItem(slot, create());
+            return true;
         }
         ItemStack book = create();
         if (!player.getInventory().add(book)) {
@@ -47,6 +57,7 @@ public final class BingoSettingsBook {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         CompoundTag marker = new CompoundTag();
         marker.putBoolean(MARKER, true);
+        marker.putInt(VERSION_MARKER, BOOK_VERSION);
         book.set(DataComponents.CUSTOM_DATA, CustomData.of(marker));
         book.set(DataComponents.CUSTOM_NAME, Component.translatable("item.neo_bingo.settings_book"));
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
@@ -61,6 +72,11 @@ public final class BingoSettingsBook {
     private static boolean isSettingsBook(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data != null && data.contains(MARKER);
+    }
+
+    private static int settingsBookVersion(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data == null ? 0 : data.copyTag().getInt(VERSION_MARKER);
     }
 
     private static List<Component> pages() {
@@ -87,6 +103,15 @@ public final class BingoSettingsBook {
                 .append(button("book.neo_bingo.action.status", "/neobingo status"))
                 .append("\n")
                 .append(button("book.neo_bingo.action.leave", "/neobingo leave")));
+        pages.add(Component.translatable("book.neo_bingo.randomteams")
+                .append("\n\n")
+                .append(button("book.neo_bingo.randomteams.two", "/neobingo randomteams 2"))
+                .append("\n")
+                .append(button("book.neo_bingo.randomteams.three", "/neobingo randomteams 3"))
+                .append("\n")
+                .append(button("book.neo_bingo.randomteams.four", "/neobingo randomteams 4"))
+                .append("\n\n")
+                .append(Component.translatable("book.neo_bingo.admin_only").withStyle(ChatFormatting.DARK_GRAY)));
         return List.copyOf(pages);
     }
 

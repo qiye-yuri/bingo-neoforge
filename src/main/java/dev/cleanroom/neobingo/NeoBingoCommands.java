@@ -46,6 +46,12 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("book")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> giveBook(context.getSource()))))
+                .then(Commands.literal("randomteams")
+                        .requires(NeoBingoPermissions::canAdmin)
+                        .executes(context -> run(context.getSource(), () -> randomizeTeams(context.getSource(), 2)))
+                        .then(Commands.argument("count", IntegerArgumentType.integer(2, 8))
+                                .executes(context -> run(context.getSource(), () -> randomizeTeams(
+                                        context.getSource(), IntegerArgumentType.getInteger(context, "count"))))))
                 .then(Commands.literal("start")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
@@ -206,6 +212,15 @@ public final class NeoBingoCommands {
         source.sendSuccess(() -> Component.translatable(given
                 ? "commands.neo_bingo.book.success"
                 : "commands.neo_bingo.book.already_has"), false);
+    }
+
+    private static void randomizeTeams(CommandSourceStack source, int teamCount) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        session.randomizeTeams(teamCount, new java.util.Random(source.getLevel().getRandom().nextLong()));
+        data.store(session);
+        announce(source, Component.translatable(
+                "commands.neo_bingo.randomteams.success", session.roster().playerCount(), teamCount));
     }
 
     private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {

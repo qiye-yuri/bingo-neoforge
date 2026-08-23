@@ -67,6 +67,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
 - `/neobingo leave`：在大厅开放期间离开当前队伍。
 - `/neobingo book`：补领一本可点击选择队伍、模式和难度的 Bingo 设置书。
+- `/neobingo randomteams [队伍数]`：将已加入大厅的玩家随机且尽量均衡地分为 2～8 队，默认 2 队，仅管理员可用。
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，已加入队伍的玩家或管理员可用。
 - `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏。
 - `/neobingo start ranked <秒数> [种子]`：开始按得分排名的限时游戏。

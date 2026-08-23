@@ -162,7 +162,9 @@ public final class NeoBingoGameTests {
         NeoBingoSavedData data = NeoBingoSavedData.get(server);
         data.clear();
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer secondPlayer = helper.makeMockServerPlayerInLevel();
         PlayerId playerId = new PlayerId(player.getUUID());
+        PlayerId secondPlayerId = new PlayerId(secondPlayer.getUUID());
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo book");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo book");
@@ -172,12 +174,20 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(settingsBookCount, 1L, "重复领取不应产生多本设置书");
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
+        server.getCommands().performPrefixedCommand(secondPlayer.createCommandSourceStack(), "neobingo join blue");
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo randomteams 2");
+        BingoSession randomized = data.restoreSession().orElseThrow();
+        TeamId randomizedPlayerTeam = randomized.roster().teamOf(playerId).orElseThrow();
+        helper.assertFalse(
+                randomizedPlayerTeam.equals(randomized.roster().teamOf(secondPlayerId).orElseThrow()),
+                "两名玩家随机分入两队时应位于不同队伍");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo start 42");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
 
         BingoSession running = data.restoreSession().orElseThrow();
         helper.assertValueEqual(running.state(), SessionState.RUNNING, "命令开局后会话应处于运行状态");
-        helper.assertValueEqual(running.roster().teamOf(playerId).orElseThrow(), RED, "加入命令应保存玩家队伍");
+        helper.assertValueEqual(
+                running.roster().teamOf(playerId).orElseThrow(), randomizedPlayerTeam, "开局后应保留随机分队结果");
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
         helper.assertValueEqual(running.seed().orElseThrow(), 42L, "开局命令应使用指定种子");
 

@@ -23,14 +23,11 @@ public final class BingoGame {
         card.checkedIndex(tileIndex);
 
         Set<TeamId> tileClaims = claims.computeIfAbsent(tileIndex, ignored -> new HashSet<>());
-        if (tileClaims.contains(team)) {
-            return ClaimOutcome.ALREADY_CLAIMED_BY_TEAM;
+        ClaimOutcome outcome = mode.claimRule().evaluate(team, Set.copyOf(tileClaims));
+        if (outcome == ClaimOutcome.CLAIMED) {
+            tileClaims.add(team);
         }
-        if (mode == GameMode.LOCKOUT && !tileClaims.isEmpty()) {
-            return ClaimOutcome.LOCKED_BY_OTHER_TEAM;
-        }
-        tileClaims.add(team);
-        return ClaimOutcome.CLAIMED;
+        return outcome;
     }
 
     public boolean isClaimedBy(TeamId team, int tileIndex) {

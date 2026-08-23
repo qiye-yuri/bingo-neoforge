@@ -9,7 +9,9 @@ import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,6 +39,7 @@ public final class InventoryClaimTicker {
         }
 
         boolean changed = false;
+        Set<TeamId> changedTeams = new LinkedHashSet<>();
         for (ServerPlayer player : players) {
             PlayerId playerId = new PlayerId(player.getUUID());
             if (session.roster().teamOf(playerId).isEmpty()) {
@@ -52,7 +55,7 @@ public final class InventoryClaimTicker {
             }
             changed = true;
             TeamId team = session.roster().teamOf(playerId).orElseThrow();
-            NeoBingoNetwork.syncTeamCard(session, team, players);
+            changedTeams.add(team);
             player.sendSystemMessage(Component.translatable(
                     "commands.neo_bingo.claim.automatic", result.claimedTiles().size()));
             if (result.state() == SessionState.FINISHED) {
@@ -62,6 +65,7 @@ public final class InventoryClaimTicker {
                 break;
             }
         }
+        changedTeams.forEach(team -> NeoBingoNetwork.syncTeamCard(session, team, players));
         if (changed) {
             data.store(session);
         }

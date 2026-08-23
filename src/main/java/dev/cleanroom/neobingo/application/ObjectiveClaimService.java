@@ -7,6 +7,7 @@ import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionClaimResult;
 import dev.cleanroom.neobingo.domain.SessionState;
+import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.ObjectiveCompletionRule;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -27,11 +28,16 @@ public final class ObjectiveClaimService {
         Objects.requireNonNull(observedObjectives, "observedObjectives");
         Objects.requireNonNull(completionRule, "completionRule");
         BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
+        TeamId team = session.roster().teamOf(player)
+                .orElseThrow(() -> new IllegalArgumentException("玩家尚未加入队伍"));
         var claimedTiles = new ArrayList<Integer>();
 
         for (int tileIndex = 0; tileIndex < game.card().tileCount(); tileIndex++) {
             if (session.state() != SessionState.RUNNING) {
                 break;
+            }
+            if (game.isClaimedBy(team, tileIndex)) {
+                continue;
             }
             if (!completionRule.isCompleted(game.card().objectiveAt(tileIndex), observedObjectives)) {
                 continue;

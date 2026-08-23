@@ -12,6 +12,7 @@ import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +60,25 @@ class ObjectiveClaimServiceTest {
                 (objective, observed) -> objective.equals(selected));
 
         assertEquals(List.of(7), result.claimedTiles());
+    }
+
+    @Test
+    void skipsCompletionEvaluationForAlreadyClaimedTiles() {
+        BingoSession session = runningSession();
+        session.claim(PLAYER, 0);
+        AtomicInteger evaluations = new AtomicInteger();
+
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session,
+                PLAYER,
+                Set.of(),
+                (objective, observed) -> {
+                    evaluations.incrementAndGet();
+                    return false;
+                });
+
+        assertEquals(List.of(), result.claimedTiles());
+        assertEquals(24, evaluations.get());
     }
 
     private static BingoSession runningSession() {

@@ -67,6 +67,7 @@
 - [x] Localize command failures without exposing internal exception text to clients.
 - [x] Run GameTests in CI and archive the mod JAR and test reports.
 - [x] Register play and administration command nodes that permission plugins can override.
+- [x] Skip repeated checks for claimed objectives and coalesce automatic team-card synchronization.
 - Permissions, performance tests, compatibility matrix, and release automation.
 
 ## Architecture boundaries

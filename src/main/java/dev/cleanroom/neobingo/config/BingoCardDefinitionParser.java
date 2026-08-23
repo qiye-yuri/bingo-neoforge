@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-/** 将严格的版本化 JSON 转换为宾果卡定义。 */
+/** 将严格的版本化 JSON 转换为 Bingo 卡定义。 */
 public final class BingoCardDefinitionParser {
     private static final Set<String> ALLOWED_FIELDS = Set.of("schema_version", "size", "objectives");
 
@@ -20,11 +20,11 @@ public final class BingoCardDefinitionParser {
         Objects.requireNonNull(reader, "reader");
         JsonElement root = JsonParser.parseReader(reader);
         if (!root.isJsonObject()) {
-            throw new IllegalArgumentException("宾果卡定义根节点必须是对象");
+            throw new IllegalArgumentException("Bingo 卡定义根节点必须是对象");
         }
         JsonObject object = BingoCardDefinitionMigrator.migrate(root.getAsJsonObject());
         if (!ALLOWED_FIELDS.containsAll(object.keySet())) {
-            throw new IllegalArgumentException("宾果卡定义包含未知字段");
+            throw new IllegalArgumentException("Bingo 卡定义包含未知字段");
         }
         int schemaVersion = requiredInteger(object, "schema_version");
         int size = requiredInteger(object, "size");

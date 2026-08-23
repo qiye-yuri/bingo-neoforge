@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-/** 在增强客户端右上角绘制最近同步的宾果卡。 */
+/** 在增强客户端右上角绘制最近同步的 Bingo 卡。 */
 @EventBusSubscriber(modid = NeoBingo.MOD_ID, value = Dist.CLIENT)
 public final class ClientBingoHud {
     private static final int PADDING = 5;

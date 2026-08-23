@@ -153,7 +153,7 @@ tasks.named('test', Test).configure {
 
 tasks.register('generateBingoCardDefinition', JavaExec) {
     group = 'neo bingo'
-    description = '根据 -PbingoOutput、-PbingoSize 和 -PbingoObjectives 生成宾果卡定义。'
+    description = '根据 -PbingoOutput、-PbingoSize 和 -PbingoObjectives 生成 Bingo 卡定义。'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'dev.cleanroom.neobingo.config.BingoCardDefinitionGenerator'
     dependsOn tasks.named('classes')

@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-/** 根据命令行参数生成当前版本的宾果卡定义。 */
+/** 根据命令行参数生成当前版本的 Bingo 卡定义。 */
 public final class BingoCardDefinitionGenerator {
     private BingoCardDefinitionGenerator() {
     }

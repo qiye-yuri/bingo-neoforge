@@ -10,7 +10,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
-/** 将全局宾果会话保存到主世界 data 目录。 */
+/** 将全局 Bingo 会话保存到主世界 data 目录。 */
 public final class NeoBingoSavedData extends SavedData {
     private static final String DATA_NAME = "neo_bingo_session";
     private static final String SESSION_KEY = "session";

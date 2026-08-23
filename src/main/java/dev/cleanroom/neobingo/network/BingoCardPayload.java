@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-/** 向增强客户端同步可直接展示的宾果卡文本快照。 */
+/** 向增强客户端同步可直接展示的 Bingo 卡文本快照。 */
 public record BingoCardPayload(String team, String mode, List<String> rows) implements CustomPacketPayload {
     private static final int MAX_TEAM_LENGTH = 32;
     private static final int MAX_MODE_LENGTH = 16;

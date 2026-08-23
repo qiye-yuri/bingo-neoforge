@@ -1,6 +1,7 @@
 package dev.cleanroom.neobingo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,6 +30,14 @@ class LanguageResourcesTest {
                 placeholderCount(english.get(key).getAsString()),
                 placeholderCount(chinese.get(key).getAsString()),
                 key));
+    }
+
+    @Test
+    void chineseKeepsBingoNameUntranslated() {
+        String chinese = load("zh_cn").toString();
+
+        assertTrue(chinese.contains("Bingo"));
+        assertFalse(chinese.contains("宾果"));
     }
 
     private static JsonObject load(String language) {

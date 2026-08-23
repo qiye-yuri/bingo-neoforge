@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/** 以居中面板展示服务端同步的宾果卡快照。 */
+/** 以居中面板展示服务端同步的 Bingo 卡快照。 */
 public final class BingoCardScreen extends Screen {
     private static final int PANEL_WIDTH = 700;
     private static final int CELL_HEIGHT = 28;

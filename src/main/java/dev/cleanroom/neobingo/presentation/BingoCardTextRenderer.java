@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-/** 将宾果卡渲染为原版客户端可接收的聊天文本。 */
+/** 将 Bingo 卡渲染为原版客户端可接收的聊天文本。 */
 public final class BingoCardTextRenderer {
     private BingoCardTextRenderer() {
     }

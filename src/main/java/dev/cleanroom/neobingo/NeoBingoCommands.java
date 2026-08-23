@@ -25,7 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-/** 注册并执行服务器权威的宾果命令。 */
+/** 注册并执行服务器权威的 Bingo 命令。 */
 public final class NeoBingoCommands {
     private NeoBingoCommands() {
     }
@@ -224,6 +224,9 @@ public final class NeoBingoCommands {
                 stateName(session.state()),
                 session.roster().playerCount(),
                 teamCount), false);
+        session.roster().teamSizes().forEach((team, memberCount) -> source.sendSuccess(
+                () -> Component.translatable(
+                        "commands.neo_bingo.status.team", team.value(), memberCount), false));
         session.game().ifPresent(game -> source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.status.game",
                 modeName(game.mode()),
@@ -269,14 +272,14 @@ public final class NeoBingoCommands {
             source.sendFailure(exception.feedback());
             return 0;
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            NeoBingo.LOGGER.debug("宾果命令参数或会话状态无效", exception);
+            NeoBingo.LOGGER.debug("Bingo 命令参数或会话状态无效", exception);
             source.sendFailure(Component.translatable("commands.neo_bingo.error.invalid_request"));
             return 0;
         } catch (CommandSyntaxException exception) {
             source.sendFailure(Component.translatable("commands.neo_bingo.error.player_only"));
             return 0;
         } catch (Exception exception) {
-            NeoBingo.LOGGER.error("执行宾果命令时发生未预期错误", exception);
+            NeoBingo.LOGGER.error("执行 Bingo 命令时发生未预期错误", exception);
             source.sendFailure(Component.translatable("commands.neo_bingo.error.unexpected"));
             return 0;
         }

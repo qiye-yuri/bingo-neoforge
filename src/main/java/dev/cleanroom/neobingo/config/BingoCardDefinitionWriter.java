@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
 
-/** 将当前版本的宾果卡定义写为稳定且便于审阅的 JSON。 */
+/** 将当前版本的 Bingo 卡定义写为稳定且便于审阅的 JSON。 */
 public final class BingoCardDefinitionWriter {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 

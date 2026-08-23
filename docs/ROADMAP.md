@@ -28,6 +28,7 @@
 - [x] Versioned and strictly validated data-pack definition for the default card pool.
 - [x] Playable standard and lockout modes selectable from server commands.
 - [x] Lobby leave, seed inspection, and operator card-reroll operations.
+- [x] Stable per-team member counts in the status command.
 - [x] Periodic server-authoritative inventory evaluation for online team members.
 - [x] Original English and Simplified Chinese command-feedback resources.
 - [x] Standard and lockout claim behavior extracted into independent rule strategies.

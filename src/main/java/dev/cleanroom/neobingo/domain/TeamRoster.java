@@ -1,5 +1,6 @@
 package dev.cleanroom.neobingo.domain;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +38,15 @@ public final class TeamRoster {
 
     public int playerCount() {
         return assignments.size();
+    }
+
+    public Map<TeamId, Integer> teamSizes() {
+        Map<TeamId, Integer> sizes = new LinkedHashMap<>();
+        assignments.values().stream()
+                .distinct()
+                .sorted(java.util.Comparator.comparing(TeamId::value))
+                .forEach(team -> sizes.put(team, membersOf(team).size()));
+        return Collections.unmodifiableMap(sizes);
     }
 
     public Map<PlayerId, TeamId> assignments() {

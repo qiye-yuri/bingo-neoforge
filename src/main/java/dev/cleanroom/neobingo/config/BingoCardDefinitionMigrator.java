@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.Objects;
 
-/** 将受支持的旧版宾果卡定义升级为当前格式。 */
+/** 将受支持的旧版 Bingo 卡定义升级为当前格式。 */
 public final class BingoCardDefinitionMigrator {
     private static final int LEGACY_SCHEMA_VERSION = 0;
 
@@ -19,7 +19,7 @@ public final class BingoCardDefinitionMigrator {
             return migrated;
         }
         if (version != LEGACY_SCHEMA_VERSION) {
-            throw new IllegalArgumentException("无法迁移宾果卡定义版本：" + version);
+            throw new IllegalArgumentException("无法迁移 Bingo 卡定义版本：" + version);
         }
         if (!migrated.has("card_size") || migrated.has("size")) {
             throw new IllegalArgumentException("版本 0 定义必须仅使用 card_size 字段");

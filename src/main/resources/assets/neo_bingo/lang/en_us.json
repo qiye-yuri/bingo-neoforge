@@ -26,6 +26,7 @@
   "commands.neo_bingo.state.running": "Running",
   "commands.neo_bingo.status.game": "Mode: %s, seed: %s",
   "commands.neo_bingo.status.summary": "Bingo status: %s, players: %s, teams: %s",
+  "commands.neo_bingo.status.team": "Team %s: %s member(s)",
   "commands.neo_bingo.status.remaining": "Remaining time: %s second(s)",
   "commands.neo_bingo.status.standing": "%s. %s — %s point(s)",
   "commands.neo_bingo.status.winner": "Winner: %s",

@@ -9,7 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
-/** 保存最近一次服务端资源重载所验证的默认宾果卡定义。 */
+/** 保存最近一次服务端资源重载所验证的默认 Bingo 卡定义。 */
 public final class BingoCardDefinitions {
     private static final ResourceLocation DEFAULT_DEFINITION =
             ResourceLocation.fromNamespaceAndPath(NeoBingo.MOD_ID, "bingo_cards/default.json");
@@ -25,7 +25,7 @@ public final class BingoCardDefinitions {
     public static BingoCardDefinition current() {
         BingoCardDefinition definition = current;
         if (definition == null) {
-            throw new IllegalStateException("宾果卡定义尚未加载");
+            throw new IllegalStateException("Bingo 卡定义尚未加载");
         }
         return definition;
     }
@@ -36,14 +36,14 @@ public final class BingoCardDefinitions {
             loaded.objectives().forEach(objective -> {
                 ResourceLocation key = ResourceLocation.parse(objective.value());
                 if (!BuiltInRegistries.ITEM.containsKey(key) || BuiltInRegistries.ITEM.get(key) == Items.AIR) {
-                    throw new IllegalArgumentException("宾果卡定义包含无效物品：" + objective.value());
+                    throw new IllegalArgumentException("Bingo 卡定义包含无效物品：" + objective.value());
                 }
             });
             current = loaded;
-            NeoBingo.LOGGER.info("已加载宾果卡定义：{}×{}，目标数 {}",
+            NeoBingo.LOGGER.info("已加载 Bingo 卡定义：{}×{}，目标数 {}",
                     loaded.size(), loaded.size(), loaded.objectives().size());
         } catch (IOException exception) {
-            throw new IllegalStateException("无法读取默认宾果卡定义", exception);
+            throw new IllegalStateException("无法读取默认 Bingo 卡定义", exception);
         }
     }
 }

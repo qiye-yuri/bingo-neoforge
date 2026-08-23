@@ -1,8 +1,8 @@
-# 宾果卡定义
+# Bingo 卡定义
 
 [English](CARD_DEFINITIONS.md)
 
-Neo Bingo 从 `data/neo_bingo/bingo_cards/default.json` 加载默认宾果卡目标池，数据包可以覆盖此文件。每次服务端资源重载时，模组都会重新校验该定义。
+Neo Bingo 从 `data/neo_bingo/bingo_cards/default.json` 加载默认 Bingo 卡目标池，数据包可以覆盖此文件。每次服务端资源重载时，模组都会重新校验该定义。
 
 ## 格式版本 1
 

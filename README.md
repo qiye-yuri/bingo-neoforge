@@ -17,6 +17,9 @@ Status: the first playable server-side slice is in development. Team lobbies,
 - Vanilla clients supported where practical; an optional NeoForge client adds UI
 - English and Simplified Chinese command feedback
 
+Enhanced NeoForge clients use the optional versioned `neo_bingo:protocol_version`
+channel. Servers do not require this channel, so vanilla clients remain supported.
+
 ## Build
 
 ```text

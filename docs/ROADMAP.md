@@ -46,7 +46,8 @@
 ## Phase 3 — client experience
 
 - Optional NeoForge HUD and card screen with original assets.
-- Explicit protocol negotiation so vanilla clients remain supported.
+- [x] Register a versioned, optional channel for enhanced clients.
+- [x] Explicit optional protocol negotiation so vanilla clients remain supported.
 
 ## Phase 4 — integrations and hardening
 

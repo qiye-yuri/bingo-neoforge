@@ -16,7 +16,8 @@ This is an engineering policy, not legal advice.
 
 - Copying, translating, decompiling, or adapting upstream source code.
 - Copying art, textures, sounds, translations, prose, configuration defaults,
-  tier lists, lobby structures, logos, or screenshots.
+  lobby structures, logos, or screenshots. The LGPL-3.0 tier-list data identified
+  in `NOTICE.md` is the sole documented exception.
 - Reusing upstream package names, internal class names, or distinctive branding.
 - Consulting upstream implementation code while implementing the corresponding
   subsystem.

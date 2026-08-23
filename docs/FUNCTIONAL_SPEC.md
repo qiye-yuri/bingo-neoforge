@@ -37,4 +37,5 @@ implementation details.
 
 - No promise of upstream save-file, packet, config, translation-key, or API ABI
   compatibility.
-- No upstream tier lists, lobby structures, textures, or translations are bundled.
+- No upstream lobby structures, textures, or translations are bundled. The S–D
+  tier-list data is included under LGPL-3.0 with attribution.

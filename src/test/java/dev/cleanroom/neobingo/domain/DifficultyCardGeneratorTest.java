@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 
 class DifficultyCardGeneratorTest {
     @Test
-    void presetsAlwaysGenerateTwentyFiveUniqueObjectives() {
+    void configuredTiersGenerateTwentyFiveUniqueObjectives() {
         Map<DifficultyTier, List<ObjectiveId>> tiers = tiers(25);
-        for (DifficultyPreset preset : DifficultyPreset.values()) {
-            List<ObjectiveId> card = DifficultyCardGenerator.generate(tiers, preset, 42L);
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            List<ObjectiveId> card = DifficultyCardGenerator.generate(tiers, tier, 42L);
             assertEquals(25, card.size());
             assertEquals(25, card.stream().distinct().count());
         }
@@ -24,14 +24,14 @@ class DifficultyCardGeneratorTest {
     void sameSeedAndPresetAreDeterministic() {
         Map<DifficultyTier, List<ObjectiveId>> tiers = tiers(25);
         assertEquals(
-                DifficultyCardGenerator.generate(tiers, DifficultyPreset.HARD, 42L),
-                DifficultyCardGenerator.generate(tiers, DifficultyPreset.HARD, 42L));
+                DifficultyCardGenerator.generate(tiers, DifficultyTier.S, 42L),
+                DifficultyCardGenerator.generate(tiers, DifficultyTier.S, 42L));
     }
 
     @Test
     void insufficientTierIsRejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> DifficultyCardGenerator.generate(tiers(1), DifficultyPreset.EASY, 42L));
+                () -> DifficultyCardGenerator.generate(tiers(1), DifficultyTier.MAX, 42L));
     }
 
     private static Map<DifficultyTier, List<ObjectiveId>> tiers(int count) {

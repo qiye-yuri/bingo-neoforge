@@ -7,30 +7,40 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
-/** 按难度预设从彼此隔离的目标池生成一张确定性卡片。 */
+/** 从指定难度目标池生成一张确定性卡片，并应用目标互斥组。 */
 public final class DifficultyCardGenerator {
     private DifficultyCardGenerator() {
     }
 
     public static List<ObjectiveId> generate(
             Map<DifficultyTier, List<ObjectiveId>> tiers,
-            DifficultyPreset preset,
+            DifficultyTier tier,
+            long seed) {
+        return generate(tiers, List.of(), tier, seed);
+    }
+
+    public static List<ObjectiveId> generate(
+            Map<DifficultyTier, List<ObjectiveId>> tiers,
+            List<List<ObjectiveId>> exclusionGroups,
+            DifficultyTier tier,
             long seed) {
         Objects.requireNonNull(tiers, "tiers");
-        Objects.requireNonNull(preset, "preset");
+        Objects.requireNonNull(tier, "tier");
         Random random = new Random(seed);
         List<ObjectiveId> selected = new ArrayList<>(25);
-        for (DifficultyTier tier : DifficultyTier.values()) {
-            List<ObjectiveId> candidates = new ArrayList<>(Objects.requireNonNull(tiers.get(tier), tier.name()));
-            Collections.shuffle(candidates, random);
-            int count = preset.count(tier);
-            if (candidates.size() < count) {
-                throw new IllegalArgumentException("难度 " + tier + " 的目标数量不足，需要 " + count + " 个");
+        List<ObjectiveId> candidates = new ArrayList<>(Objects.requireNonNull(tiers.get(tier), tier.name()));
+        Collections.shuffle(candidates, random);
+        for (ObjectiveId candidate : candidates) {
+            if (selected.size() >= 25) {
+                break;
             }
-            selected.addAll(candidates.subList(0, count));
+            if (exclusionGroups.stream().noneMatch(group -> group.contains(candidate)
+                    && group.stream().anyMatch(selected::contains))) {
+                selected.add(candidate);
+            }
         }
-        if (selected.stream().distinct().count() != selected.size()) {
-            throw new IllegalArgumentException("不同难度的目标池不能包含重复目标");
+        if (selected.size() < 25) {
+            throw new IllegalArgumentException("难度 " + tier + " 在应用互斥组后至少需要 25 个可用目标");
         }
         Collections.shuffle(selected, random);
         return List.copyOf(selected);

@@ -40,11 +40,11 @@ Neo Bingo 从 `data/neo_bingo/bingo_cards/default.json` 加载默认 Bingo 卡�
 
 ## 难度分级
 
-默认定义的前 50 个目标按 easy、medium、hard、extreme、impossible 顺序分组，数量依次为 16、10、8、8、8。旧的开局命令默认使用 `medium`。也可以显式选择难度：
+难度目标从 `difficulty_tiers.json` 加载。可用等级为 `max`、`s`、`a`、`b`、`c`、`d`；未指定难度时默认使用 `c`。
 
 ```text
-/neobingo start standard difficulty easy 42
+/neobingo start standard difficulty s 42
 /neobingo start lockout difficulty max 42
 ```
 
-内置预设为 `easy`、`medium`、`hard`、`extreme`、`impossible` 和 `max`。`max` 初始采用 impossible 的配比，便于在 `DifficultyPreset.MAX` 中手动调整五个等级的抽取数量；总数必须保持为 25，并且不能超过对应目标池的容量。
+内置 S–D 清单和互斥组与 Yet Another Bingo 2.2.4 保持一致。`MAX` 数组特意留空，供你手动编辑。过滤掉 Minecraft 1.21.1 中无效的物品和互斥冲突后，每个可用等级至少需要保留 25 个目标。

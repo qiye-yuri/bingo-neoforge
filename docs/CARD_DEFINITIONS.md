@@ -48,11 +48,11 @@ count, and writes deterministic UTF-8 JSON in the current schema version.
 
 ## Difficulty tiers
 
-The first 50 objectives are grouped in easy-to-impossible order with group sizes 16, 10, 8, 8, and 8. Existing start commands default to `medium`. A difficulty can be selected explicitly:
+Difficulty targets are loaded from `difficulty_tiers.json`. The available tiers are `max`, `s`, `a`, `b`, `c`, and `d`; an omitted difficulty defaults to `c`.
 
 ```text
-/neobingo start standard difficulty easy 42
+/neobingo start standard difficulty s 42
 /neobingo start lockout difficulty max 42
 ```
 
-The presets are `easy`, `medium`, `hard`, `extreme`, `impossible`, and `max`. `max` initially matches impossible and can be manually adjusted in `DifficultyPreset.MAX`. Its five counts must total 25 and fit their target pools.
+The bundled S–D lists and exclusion groups follow Yet Another Bingo 2.2.4. `MAX` is intentionally empty for manual editing. A tier needs at least 25 usable entries after invalid Minecraft 1.21.1 items and exclusion conflicts are removed.

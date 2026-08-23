@@ -11,7 +11,7 @@ import dev.cleanroom.neobingo.config.BingoCardDefinition;
 import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
-import dev.cleanroom.neobingo.domain.DifficultyPreset;
+import dev.cleanroom.neobingo.domain.DifficultyTier;
 import dev.cleanroom.neobingo.domain.GameMode;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
@@ -49,13 +49,13 @@ public final class NeoBingoCommands {
                                 context.getSource(),
                                 context.getSource().getLevel().getRandom().nextLong(),
                                 GameMode.STANDARD,
-                                DifficultyPreset.MEDIUM)))
+                                DifficultyTier.C)))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> run(context.getSource(), () -> start(
                                         context.getSource(),
                                         LongArgumentType.getLong(context, "seed"),
                                         GameMode.STANDARD,
-                                        DifficultyPreset.MEDIUM))))
+                                        DifficultyTier.C))))
                         .then(modeStartCommand("standard", GameMode.STANDARD))
                         .then(modeStartCommand("lockout", GameMode.LOCKOUT))
                         .then(modeStartCommand("hidden", GameMode.HIDDEN))
@@ -64,11 +64,14 @@ public final class NeoBingoCommands {
                         .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> reroll(
                                 context.getSource(),
-                                context.getSource().getLevel().getRandom().nextLong())))
+                                context.getSource().getLevel().getRandom().nextLong(),
+                                DifficultyTier.C)))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> run(context.getSource(), () -> reroll(
                                         context.getSource(),
-                                        LongArgumentType.getLong(context, "seed"))))))
+                                        LongArgumentType.getLong(context, "seed"),
+                                        DifficultyTier.C))))
+                        .then(rerollDifficultyCommands()))
                 .then(Commands.literal("card")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
@@ -103,31 +106,31 @@ public final class NeoBingoCommands {
                         context.getSource(),
                         context.getSource().getLevel().getRandom().nextLong(),
                         mode,
-                        DifficultyPreset.MEDIUM)))
+                        DifficultyTier.C)))
                 .then(Commands.argument("seed", LongArgumentType.longArg())
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
                                 LongArgumentType.getLong(context, "seed"),
                                 mode,
-                                DifficultyPreset.MEDIUM))))
+                                DifficultyTier.C))))
                 .then(difficultyCommands(mode));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> difficultyCommands(GameMode mode) {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("difficulty");
-        for (DifficultyPreset preset : DifficultyPreset.values()) {
-            root.then(Commands.literal(preset.name().toLowerCase())
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            root.then(Commands.literal(tier.name().toLowerCase())
                     .executes(context -> run(context.getSource(), () -> start(
                             context.getSource(),
                             context.getSource().getLevel().getRandom().nextLong(),
                             mode,
-                            preset)))
+                            tier)))
                     .then(Commands.argument("seed", LongArgumentType.longArg())
                             .executes(context -> run(context.getSource(), () -> start(
                                     context.getSource(),
                                     LongArgumentType.getLong(context, "seed"),
                                     mode,
-                                    preset)))));
+                                    tier)))));
         }
         return root;
     }
@@ -138,12 +141,47 @@ public final class NeoBingoCommands {
                         .executes(context -> run(context.getSource(), () -> startRanked(
                                 context.getSource(),
                                 IntegerArgumentType.getInteger(context, "seconds"),
-                                context.getSource().getLevel().getRandom().nextLong())))
+                                context.getSource().getLevel().getRandom().nextLong(),
+                                DifficultyTier.C)))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> run(context.getSource(), () -> startRanked(
                                         context.getSource(),
                                         IntegerArgumentType.getInteger(context, "seconds"),
-                                        LongArgumentType.getLong(context, "seed"))))));
+                                        LongArgumentType.getLong(context, "seed"),
+                                        DifficultyTier.C))))
+                        .then(rankedDifficultyCommands()));
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> rankedDifficultyCommands() {
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("difficulty");
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            root.then(Commands.literal(tier.name().toLowerCase())
+                    .executes(context -> run(context.getSource(), () -> startRanked(
+                            context.getSource(),
+                            IntegerArgumentType.getInteger(context, "seconds"),
+                            context.getSource().getLevel().getRandom().nextLong(),
+                            tier)))
+                    .then(Commands.argument("seed", LongArgumentType.longArg())
+                            .executes(context -> run(context.getSource(), () -> startRanked(
+                                    context.getSource(),
+                                    IntegerArgumentType.getInteger(context, "seconds"),
+                                    LongArgumentType.getLong(context, "seed"),
+                                    tier)))));
+        }
+        return root;
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> rerollDifficultyCommands() {
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("difficulty");
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            root.then(Commands.literal(tier.name().toLowerCase())
+                    .executes(context -> run(context.getSource(), () -> reroll(
+                            context.getSource(), context.getSource().getLevel().getRandom().nextLong(), tier)))
+                    .then(Commands.argument("seed", LongArgumentType.longArg())
+                            .executes(context -> run(context.getSource(), () -> reroll(
+                                    context.getSource(), LongArgumentType.getLong(context, "seed"), tier)))));
+        }
+        return root;
     }
 
     private static void leave(CommandSourceStack source) throws Exception {
@@ -159,7 +197,7 @@ public final class NeoBingoCommands {
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.leave.success"), false);
     }
 
-    private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyPreset difficulty) {
+    private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
@@ -170,21 +208,25 @@ public final class NeoBingoCommands {
                 "commands.neo_bingo.start.success", BingoModeText.displayName(mode), seed));
     }
 
-    private static void reroll(CommandSourceStack source, long seed) {
+    private static void reroll(CommandSourceStack source, long seed, DifficultyTier difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
-        session.reroll(definition.size(), definition.objectives(), seed);
+        session.reroll(definition.size(), BingoCardDefinitions.objectives(difficulty, seed), seed);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable("commands.neo_bingo.reroll.success", seed));
     }
 
-    private static void startRanked(CommandSourceStack source, int seconds, long seed) {
+    private static void startRanked(CommandSourceStack source, int seconds, long seed, DifficultyTier difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
-        session.startRanked(definition.size(), definition.objectives(), seed, Math.multiplyExact(seconds, 20L));
+        session.startRanked(
+                definition.size(),
+                BingoCardDefinitions.objectives(difficulty, seed),
+                seed,
+                Math.multiplyExact(seconds, 20L));
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(

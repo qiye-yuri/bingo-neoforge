@@ -45,7 +45,7 @@
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
 - [x] Bingo-card definition generator with strict round-trip validation and a Gradle entry point.
-- [x] Add easy, medium, hard, extreme, impossible, and manually adjustable max difficulty presets.
+- [x] Add upstream-compatible S–D target tiers and a manually editable MAX tier.
 
 ## Phase 3 — client experience
 

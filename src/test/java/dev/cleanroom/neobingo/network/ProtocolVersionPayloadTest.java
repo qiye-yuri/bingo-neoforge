@@ -48,4 +48,22 @@ class ProtocolVersionPayloadTest {
         assertEquals(false, ClientProtocolState.hudVisible());
         assertEquals(card, ClientProtocolState.latestCard().orElseThrow());
     }
+
+    @Test
+    void clientCanFocusCardCellAndPreserveItAcrossUpdates() {
+        ClientProtocolState.clear();
+        ClientProtocolState.accept(new BingoCardPayload(
+                "red", "STANDARD", java.util.List.of("[ ] stone | [✓] dirt", "[ ] sand | [ ] gravel")));
+
+        ClientProtocolState.toggleFocusedCell(1);
+        assertEquals("dirt", ClientProtocolState.focusedObjective().orElseThrow());
+
+        ClientProtocolState.accept(new BingoCardPayload(
+                "red", "STANDARD", java.util.List.of("[ ] stone | [✓] dirt", "[✓] sand | [ ] gravel")));
+        assertEquals(1, ClientProtocolState.focusedCell());
+        assertEquals("dirt", ClientProtocolState.focusedObjective().orElseThrow());
+
+        ClientProtocolState.toggleFocusedCell(1);
+        assertEquals(java.util.Optional.empty(), ClientProtocolState.focusedObjective());
+    }
 }

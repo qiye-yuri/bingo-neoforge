@@ -5,6 +5,7 @@ import dev.cleanroom.neobingo.network.ClientProtocolState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -30,8 +31,12 @@ public final class ClientBingoHud {
         if (minecraft.level == null || minecraft.options.hideGui || !ClientProtocolState.hudVisible()) {
             return;
         }
-        ClientProtocolState.latestCard().ifPresent(card -> draw(event.getGuiGraphics(), minecraft.font,
-                card.team() + " · " + card.mode(), card.rows()));
+        ClientProtocolState.latestCard().ifPresent(card -> {
+            java.util.List<String> rows = new java.util.ArrayList<>(card.rows());
+            ClientProtocolState.focusedObjective().ifPresent(objective -> rows.add(
+                    Component.translatable("hud.neo_bingo.focused", objective).getString()));
+            draw(event.getGuiGraphics(), minecraft.font, card.team() + " · " + card.mode(), rows);
+        });
     }
 
     @SubscribeEvent
@@ -58,7 +63,7 @@ public final class ClientBingoHud {
         String visibleTitle = font.plainSubstrByWidth(title, maximumTextWidth);
         int width = Math.max(font.width(visibleTitle), visibleRows.stream().mapToInt(font::width).max().orElse(0));
         int panelWidth = width + PADDING * 2;
-        int panelHeight = (rows.size() + 1) * LINE_HEIGHT + PADDING * 2;
+        int panelHeight = (visibleRows.size() + 1) * LINE_HEIGHT + PADDING * 2;
         int left = graphics.guiWidth() - panelWidth - 6;
         int top = 6;
         graphics.fill(left, top, left + panelWidth, top + panelHeight, BACKGROUND);

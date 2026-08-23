@@ -7,6 +7,7 @@ public final class ClientProtocolState {
     private static volatile int negotiatedVersion;
     private static volatile BingoCardPayload latestCard;
     private static volatile boolean hudVisible = true;
+    private static volatile int focusedCell = -1;
 
     private ClientProtocolState() {
     }
@@ -25,12 +26,16 @@ public final class ClientProtocolState {
 
     static void accept(BingoCardPayload payload) {
         latestCard = payload;
+        if (focusedCell >= cellCount(payload)) {
+            focusedCell = -1;
+        }
     }
 
     public static void clear() {
         negotiatedVersion = 0;
         latestCard = null;
         hudVisible = true;
+        focusedCell = -1;
     }
 
     public static boolean hudVisible() {
@@ -39,5 +44,37 @@ public final class ClientProtocolState {
 
     public static void toggleHud() {
         hudVisible = !hudVisible;
+    }
+
+    public static int focusedCell() {
+        return focusedCell;
+    }
+
+    public static void toggleFocusedCell(int cellIndex) {
+        if (latestCard == null || cellIndex < 0 || cellIndex >= cellCount(latestCard)) {
+            throw new IllegalArgumentException("格子索引超出当前卡片范围");
+        }
+        focusedCell = focusedCell == cellIndex ? -1 : cellIndex;
+    }
+
+    public static Optional<String> focusedObjective() {
+        if (latestCard == null || focusedCell < 0) {
+            return Optional.empty();
+        }
+        int remaining = focusedCell;
+        for (String row : latestCard.rows()) {
+            String[] cells = row.split(" \\| ", -1);
+            if (remaining < cells.length) {
+                return Optional.of(cells[remaining].replaceFirst("^\\[(?: |✓)]\\s*", ""));
+            }
+            remaining -= cells.length;
+        }
+        return Optional.empty();
+    }
+
+    private static int cellCount(BingoCardPayload payload) {
+        return payload.rows().stream()
+                .mapToInt(row -> row.split(" \\| ", -1).length)
+                .sum();
     }
 }

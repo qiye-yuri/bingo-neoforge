@@ -1,6 +1,7 @@
 package dev.cleanroom.neobingo.client;
 
 import dev.cleanroom.neobingo.network.BingoCardPayload;
+import dev.cleanroom.neobingo.network.ClientProtocolState;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,12 @@ public final class BingoCardScreen extends Screen {
     private static final int CLAIMED = 0xD0286B45;
     private static final int UNCLAIMED = 0xD0242D38;
     private static final int HIDDEN = 0xD0161B22;
+    private static final int FOCUSED = 0xFFFFFFFF;
     private final BingoCardPayload card;
+    private int gridLeft;
+    private int gridTop;
+    private int gridWidth;
+    private int columns;
 
     public BingoCardScreen(BingoCardPayload card) {
         super(Component.translatable("screen.neo_bingo.card"));
@@ -29,10 +35,13 @@ public final class BingoCardScreen extends Screen {
         java.util.List<String[]> grid = card.rows().stream()
                 .map(row -> row.split(" \\| ", -1))
                 .toList();
-        int columns = grid.stream().mapToInt(row -> row.length).max().orElse(1);
+        columns = grid.stream().mapToInt(row -> row.length).max().orElse(1);
         int height = 38 + card.rows().size() * CELL_HEIGHT;
         int left = (this.width - width) / 2;
         int top = (this.height - height) / 2;
+        gridLeft = left;
+        gridTop = top + 32;
+        gridWidth = width;
         graphics.fill(left - 1, top - 1, left + width + 1, top + height + 1, BORDER);
         graphics.fill(left, top, left + width, top + height, BACKGROUND);
         graphics.drawCenteredString(font,
@@ -49,6 +58,11 @@ public final class BingoCardScreen extends Screen {
                 int color = value.startsWith("[✓]") ? CLAIMED : value.contains("???") ? HIDDEN : UNCLAIMED;
                 graphics.fill(cellLeft + 1, cellTop + 1,
                         cellLeft + cellWidth - 1, cellTop + CELL_HEIGHT - 1, color);
+                int cellIndex = rowIndex * columns + column;
+                if (ClientProtocolState.focusedCell() == cellIndex) {
+                    graphics.renderOutline(cellLeft + 1, cellTop + 1,
+                            cellWidth - 2, CELL_HEIGHT - 2, FOCUSED);
+                }
                 String visible = font.plainSubstrByWidth(value, Math.max(1, cellWidth - 8));
                 graphics.drawString(font, visible, cellLeft + 4, cellTop + 10, TEXT, false);
                 if (mouseX >= cellLeft && mouseX < cellLeft + cellWidth
@@ -61,6 +75,19 @@ public final class BingoCardScreen extends Screen {
         if (hovered != null) {
             graphics.renderTooltip(font, Component.literal(hovered), mouseX, mouseY);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && mouseX >= gridLeft && mouseX < gridLeft + gridWidth && mouseY >= gridTop) {
+            int row = (int) (mouseY - gridTop) / CELL_HEIGHT;
+            int column = (int) (mouseX - gridLeft) / Math.max(1, gridWidth / columns);
+            if (row >= 0 && row < card.rows().size() && column >= 0 && column < columns) {
+                ClientProtocolState.toggleFocusedCell(row * columns + column);
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

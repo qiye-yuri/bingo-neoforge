@@ -30,6 +30,7 @@
   "key.categories.neo_bingo": "Neo Bingo",
   "key.neo_bingo.open_card": "Open bingo card",
   "key.neo_bingo.toggle_hud": "Toggle bingo HUD",
+  "hud.neo_bingo.focused": "Focused: %s",
   "screen.neo_bingo.card": "Bingo Card",
   "screen.neo_bingo.card.title": "Team %s · %s"
 }

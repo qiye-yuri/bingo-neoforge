@@ -23,6 +23,7 @@ class LanguageResourcesTest {
                         || key.startsWith("mod.neo_bingo.")
                         || key.startsWith("key.neo_bingo.")
                         || key.startsWith("key.categories.neo_bingo")
+                        || key.startsWith("hud.neo_bingo.")
                         || key.startsWith("screen.neo_bingo.")));
         english.keySet().forEach(key -> assertEquals(
                 placeholderCount(english.get(key).getAsString()),

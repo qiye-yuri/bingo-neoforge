@@ -47,6 +47,7 @@
 
 - [x] Initial optional NeoForge bingo HUD using an original text-panel design.
 - [x] Full bingo-card screen opened by a rebindable key.
+- [x] Adaptive full-card grid and bounded HUD width for narrow screens.
 - Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.

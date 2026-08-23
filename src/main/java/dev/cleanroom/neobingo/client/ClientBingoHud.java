@@ -48,15 +48,20 @@ public final class ClientBingoHud {
     }
 
     private static void draw(GuiGraphics graphics, Font font, String title, java.util.List<String> rows) {
-        int width = Math.max(font.width(title), rows.stream().mapToInt(font::width).max().orElse(0));
+        int maximumTextWidth = Math.max(120, graphics.guiWidth() * 45 / 100);
+        java.util.List<String> visibleRows = rows.stream()
+                .map(row -> font.plainSubstrByWidth(row, maximumTextWidth))
+                .toList();
+        String visibleTitle = font.plainSubstrByWidth(title, maximumTextWidth);
+        int width = Math.max(font.width(visibleTitle), visibleRows.stream().mapToInt(font::width).max().orElse(0));
         int panelWidth = width + PADDING * 2;
         int panelHeight = (rows.size() + 1) * LINE_HEIGHT + PADDING * 2;
         int left = graphics.guiWidth() - panelWidth - 6;
         int top = 6;
         graphics.fill(left, top, left + panelWidth, top + panelHeight, BACKGROUND);
-        graphics.drawString(font, title, left + PADDING, top + PADDING, TITLE_COLOR, false);
-        for (int index = 0; index < rows.size(); index++) {
-            graphics.drawString(font, rows.get(index), left + PADDING,
+        graphics.drawString(font, visibleTitle, left + PADDING, top + PADDING, TITLE_COLOR, false);
+        for (int index = 0; index < visibleRows.size(); index++) {
+            graphics.drawString(font, visibleRows.get(index), left + PADDING,
                     top + PADDING + (index + 1) * LINE_HEIGHT, TEXT_COLOR, false);
         }
     }

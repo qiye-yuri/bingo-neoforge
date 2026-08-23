@@ -29,6 +29,7 @@
 - [x] Playable standard and lockout modes selectable from server commands.
 - [x] Lobby leave, seed inspection, and operator card-reroll operations.
 - [x] Periodic server-authoritative inventory evaluation for online team members.
+- [x] Original English and Simplified Chinese command-feedback resources.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - Versioned JSON schema, validation, data generation, and migration tests.
 

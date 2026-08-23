@@ -47,10 +47,11 @@ public final class InventoryClaimTicker {
                 continue;
             }
             changed = true;
-            player.sendSystemMessage(Component.literal("自动认领了 " + result.claimedTiles().size() + " 个宾果格子"));
+            player.sendSystemMessage(Component.translatable(
+                    "commands.neo_bingo.claim.automatic", result.claimedTiles().size()));
             if (result.state() == SessionState.FINISHED) {
                 result.winner().ifPresent(team -> server.getPlayerList().broadcastSystemMessage(
-                        Component.literal("队伍 " + team.value() + " 完成连线并获胜"),
+                        Component.translatable("commands.neo_bingo.win", team.value()),
                         false));
                 break;
             }

@@ -1,3 +1,23 @@
 {
+  "commands.neo_bingo.card.title": "Bingo card (team %s)",
+  "commands.neo_bingo.claim.automatic": "Automatically claimed %s bingo tile(s)",
+  "commands.neo_bingo.claim.empty": "No new objectives can be claimed from your inventory",
+  "commands.neo_bingo.claim.success": "Claimed %s tile(s) for your team",
+  "commands.neo_bingo.end.success": "The bingo game has ended",
+  "commands.neo_bingo.error.player_only": "This command can only be used by an in-game player",
+  "commands.neo_bingo.error.unexpected": "The command failed; see the server log for details",
+  "commands.neo_bingo.join.success": "Joined team %s",
+  "commands.neo_bingo.leave.success": "Left the current team",
+  "commands.neo_bingo.mode.lockout": "Lockout",
+  "commands.neo_bingo.mode.standard": "Standard",
+  "commands.neo_bingo.reroll.success": "Generated a new bingo card with seed %s",
+  "commands.neo_bingo.start.success": "Bingo game started in %s mode with seed %s",
+  "commands.neo_bingo.state.finished": "Finished",
+  "commands.neo_bingo.state.lobby": "Lobby",
+  "commands.neo_bingo.state.running": "Running",
+  "commands.neo_bingo.status.game": "Mode: %s, seed: %s",
+  "commands.neo_bingo.status.summary": "Bingo status: %s, players: %s, teams: %s",
+  "commands.neo_bingo.status.winner": "Winner: %s",
+  "commands.neo_bingo.win": "Team %s completed a line and won",
   "mod.neo_bingo.name": "Neo Bingo"
 }

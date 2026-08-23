@@ -78,7 +78,7 @@ public final class NeoBingoCommands {
         TeamId team = new TeamId(teamName);
         session.join(new PlayerId(player.getUUID()), team);
         data.store(session);
-        source.sendSuccess(() -> Component.literal("已加入队伍 " + team.value()), false);
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.join.success", team.value()), false);
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> modeStartCommand(
@@ -106,7 +106,7 @@ public final class NeoBingoCommands {
         }
         session.leave(playerId);
         data.store(session);
-        source.sendSuccess(() -> Component.literal("已离开当前队伍"), false);
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.leave.success"), false);
     }
 
     private static void start(CommandSourceStack source, long seed, GameMode mode) {
@@ -115,8 +115,8 @@ public final class NeoBingoCommands {
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.start(definition.size(), definition.objectives(), seed, mode);
         data.store(session);
-        source.sendSuccess(() -> Component.literal(
-                "宾果游戏已开始，模式：" + modeName(mode) + "，种子：" + seed), true);
+        source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.start.success", modeName(mode), seed), true);
     }
 
     private static void reroll(CommandSourceStack source, long seed) {
@@ -125,7 +125,7 @@ public final class NeoBingoCommands {
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.reroll(definition.size(), definition.objectives(), seed);
         data.store(session);
-        source.sendSuccess(() -> Component.literal("已重新生成宾果卡，种子：" + seed), true);
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.reroll.success", seed), true);
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {
@@ -135,7 +135,7 @@ public final class NeoBingoCommands {
         TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
                 .orElseThrow(() -> new IllegalStateException("你尚未加入队伍"));
 
-        source.sendSuccess(() -> Component.literal("宾果卡（队伍 " + team.value() + "）"), false);
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.card.title", team.value()), false);
         for (String line : BingoCardTextRenderer.render(game, team)) {
             source.sendSuccess(() -> Component.literal(line), false);
         }
@@ -146,7 +146,7 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         session.end();
         data.store(session);
-        source.sendSuccess(() -> Component.literal("宾果游戏已结束"), true);
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.end.success"), true);
     }
 
     private static void claim(CommandSourceStack source) throws Exception {
@@ -158,44 +158,47 @@ public final class NeoBingoCommands {
                 new PlayerId(player.getUUID()),
                 ServerInventoryObjectiveReader.read(player));
         if (result.claimedTiles().isEmpty()) {
-            source.sendSuccess(() -> Component.literal("物品栏中没有可新认领的目标"), false);
+            source.sendSuccess(() -> Component.translatable("commands.neo_bingo.claim.empty"), false);
             return;
         }
 
         data.store(session);
         source.sendSuccess(
-                () -> Component.literal("已为队伍认领 " + result.claimedTiles().size() + " 个格子"),
+                () -> Component.translatable("commands.neo_bingo.claim.success", result.claimedTiles().size()),
                 true);
         result.winner().ifPresent(team -> source.sendSuccess(
-                () -> Component.literal("队伍 " + team.value() + " 完成连线并获胜"),
+                () -> Component.translatable("commands.neo_bingo.win", team.value()),
                 true));
     }
 
     private static void showStatus(CommandSourceStack source) {
         BingoSession session = requiredSession(NeoBingoSavedData.get(source.getServer()));
         long teamCount = session.roster().assignments().values().stream().distinct().count();
-        StringBuilder status = new StringBuilder("宾果状态：")
-                .append(stateName(session.state()))
-                .append("，玩家：").append(session.roster().playerCount())
-                .append("，队伍：").append(teamCount);
-        session.game().ifPresent(game -> status.append("，模式：").append(modeName(game.mode())));
-        session.seed().ifPresent(seed -> status.append("，种子：").append(seed));
-        session.winner().ifPresent(winner -> status.append("，胜者：").append(winner.value()));
-        source.sendSuccess(() -> Component.literal(status.toString()), false);
+        source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.status.summary",
+                stateName(session.state()),
+                session.roster().playerCount(),
+                teamCount), false);
+        session.game().ifPresent(game -> source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.status.game",
+                modeName(game.mode()),
+                session.seed().orElseThrow()), false));
+        session.winner().ifPresent(winner -> source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.status.winner", winner.value()), false));
     }
 
-    private static String modeName(GameMode mode) {
+    private static Component modeName(GameMode mode) {
         return switch (mode) {
-            case STANDARD -> "标准";
-            case LOCKOUT -> "锁定";
+            case STANDARD -> Component.translatable("commands.neo_bingo.mode.standard");
+            case LOCKOUT -> Component.translatable("commands.neo_bingo.mode.lockout");
         };
     }
 
-    private static String stateName(SessionState state) {
+    private static Component stateName(SessionState state) {
         return switch (state) {
-            case LOBBY -> "大厅";
-            case RUNNING -> "进行中";
-            case FINISHED -> "已结束";
+            case LOBBY -> Component.translatable("commands.neo_bingo.state.lobby");
+            case RUNNING -> Component.translatable("commands.neo_bingo.state.running");
+            case FINISHED -> Component.translatable("commands.neo_bingo.state.finished");
         };
     }
 
@@ -211,11 +214,11 @@ public final class NeoBingoCommands {
             source.sendFailure(Component.literal(exception.getMessage()));
             return 0;
         } catch (CommandSyntaxException exception) {
-            source.sendFailure(Component.literal("命令只能由游戏内玩家执行"));
+            source.sendFailure(Component.translatable("commands.neo_bingo.error.player_only"));
             return 0;
         } catch (Exception exception) {
             NeoBingo.LOGGER.error("执行宾果命令时发生未预期错误", exception);
-            source.sendFailure(Component.literal("命令执行失败，请查看服务器日志"));
+            source.sendFailure(Component.translatable("commands.neo_bingo.error.unexpected"));
             return 0;
         }
     }

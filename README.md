@@ -15,6 +15,7 @@ Status: the first playable server-side slice is in development. Team lobbies,
 - Java 21
 - Dedicated server and integrated server
 - Vanilla clients supported where practical; an optional NeoForge client adds UI
+- English and Simplified Chinese command feedback
 
 ## Build
 

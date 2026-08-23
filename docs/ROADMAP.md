@@ -47,6 +47,7 @@
 
 - Optional NeoForge HUD and card screen with original assets.
 - [x] Register a versioned, optional channel for enhanced clients.
+- [x] Send the application version only to enhanced clients that negotiated the channel.
 - [x] Explicit optional protocol negotiation so vanilla clients remain supported.
 
 ## Phase 4 — integrations and hardening

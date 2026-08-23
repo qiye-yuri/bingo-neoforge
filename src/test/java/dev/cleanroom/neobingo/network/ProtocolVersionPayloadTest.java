@@ -17,4 +17,11 @@ class ProtocolVersionPayloadTest {
     void rejectsInvalidApplicationVersion() {
         assertThrows(IllegalArgumentException.class, () -> new ProtocolVersionPayload(0));
     }
+
+    @Test
+    void clientRecordsNegotiatedApplicationVersion() {
+        ClientProtocolState.accept(new ProtocolVersionPayload(1));
+
+        assertEquals(1, ClientProtocolState.negotiatedVersion());
+    }
 }

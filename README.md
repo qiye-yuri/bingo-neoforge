@@ -20,6 +20,16 @@ Status: the first playable server-side slice is in development. Team lobbies,
 Enhanced NeoForge clients use the optional versioned `neo_bingo:protocol_version`
 channel. Servers do not require this channel, so vanilla clients remain supported.
 
+## Installation and first game
+
+1. Install NeoForge 21.1.248 for Minecraft 1.21.1 and run the server with Java 21.
+2. Copy `build/libs/neo_bingo-<version>.jar` into the server's `mods` directory.
+3. Clients may play without the mod through chat. For the HUD, full card, and item icons, copy the same JAR into the client's `mods` directory.
+4. Start the server and have players run `/neobingo join <team>`.
+5. An operator can run `/neobingo start` for standard mode or select another mode with the commands below.
+
+A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
+
 ## Build
 
 ```text

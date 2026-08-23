@@ -22,6 +22,7 @@
 - [x] Standard mode and one independently designed vanilla-compatible card view.
 - [x] Server-authoritative inventory checks for manually claiming item objectives.
 - [x] GameTests for claim rules, victory, world-save recovery, and reconnect identity.
+- [x] Broadcast game start, reroll, end, and victory events to every online player.
 
 ## Phase 2 — modes and configuration
 

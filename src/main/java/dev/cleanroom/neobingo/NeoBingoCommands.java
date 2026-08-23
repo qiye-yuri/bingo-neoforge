@@ -141,8 +141,8 @@ public final class NeoBingoCommands {
         session.start(definition.size(), definition.objectives(), seed, mode);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
-        source.sendSuccess(() -> Component.translatable(
-                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), seed), true);
+        announce(source, Component.translatable(
+                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), seed));
     }
 
     private static void reroll(CommandSourceStack source, long seed) {
@@ -152,7 +152,7 @@ public final class NeoBingoCommands {
         session.reroll(definition.size(), definition.objectives(), seed);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
-        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.reroll.success", seed), true);
+        announce(source, Component.translatable("commands.neo_bingo.reroll.success", seed));
     }
 
     private static void startRanked(CommandSourceStack source, int seconds, long seed) {
@@ -162,8 +162,8 @@ public final class NeoBingoCommands {
         session.startRanked(definition.size(), definition.objectives(), seed, Math.multiplyExact(seconds, 20L));
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
-        source.sendSuccess(() -> Component.translatable(
-                "commands.neo_bingo.start.ranked.success", seconds, seed), true);
+        announce(source, Component.translatable(
+                "commands.neo_bingo.start.ranked.success", seconds, seed));
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {
@@ -186,7 +186,7 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         session.end();
         data.store(session);
-        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.end.success"), true);
+        announce(source, Component.translatable("commands.neo_bingo.end.success"));
     }
 
     private static void claim(CommandSourceStack source) throws Exception {
@@ -217,9 +217,8 @@ public final class NeoBingoCommands {
         source.sendSuccess(
                 () -> Component.translatable("commands.neo_bingo.claim.success", result.claimedTiles().size()),
                 true);
-        result.winner().ifPresent(winner -> source.sendSuccess(
-                () -> Component.translatable("commands.neo_bingo.win", winner.value()),
-                true));
+        result.winner().ifPresent(winner -> announce(
+                source, Component.translatable("commands.neo_bingo.win", winner.value())));
     }
 
     private static void showStatus(CommandSourceStack source) {
@@ -284,6 +283,13 @@ public final class NeoBingoCommands {
 
     private static CommandFeedbackException failure(String translationKey) {
         return new CommandFeedbackException(Component.translatable(translationKey));
+    }
+
+    private static void announce(CommandSourceStack source, Component message) {
+        source.getServer().getPlayerList().broadcastSystemMessage(message, false);
+        if (!(source.getEntity() instanceof ServerPlayer)) {
+            source.sendSuccess(() -> message, false);
+        }
     }
 
     private static final class CommandFeedbackException extends RuntimeException {

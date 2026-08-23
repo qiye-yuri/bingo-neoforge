@@ -17,6 +17,16 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 
 安装模组的增强客户端使用可选且带版本号的 `neo_bingo:protocol_version` 通道。服务端不强制要求该通道，因此原版客户端仍可加入。
 
+## 安装与首次开局
+
+1. 为 Minecraft 1.21.1 安装 NeoForge 21.1.248，并使用 Java 21 启动服务端。
+2. 将构建生成的 `build/libs/neo_bingo-<版本>.jar` 放入服务端的 `mods` 文件夹。
+3. 客户端可以不安装模组并通过聊天栏游玩；若需要 HUD、完整卡片和物品图标，则将同一个 JAR 放入客户端 `mods` 文件夹。
+4. 启动服务端后，玩家使用 `/neobingo join <team>` 加入队伍。
+5. 管理员使用 `/neobingo start` 开始标准模式，或使用下方命令选择其他模式。
+
+服务端成功加载时，日志会显示 `Neo Bingo initialized` 和已加载的 5×5 Bingo 卡定义。
+
 ## 构建
 
 ```text

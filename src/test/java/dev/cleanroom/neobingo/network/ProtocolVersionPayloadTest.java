@@ -35,6 +35,7 @@ class ProtocolVersionPayloadTest {
         assertEquals(0, ClientProtocolState.negotiatedVersion());
         assertEquals(java.util.Optional.empty(), ClientProtocolState.latestCard());
         assertEquals(true, ClientProtocolState.hudVisible());
+        assertEquals(-1, ClientProtocolState.focusedCell());
     }
 
     @Test
@@ -64,6 +65,19 @@ class ProtocolVersionPayloadTest {
         assertEquals("dirt", ClientProtocolState.focusedObjective().orElseThrow());
 
         ClientProtocolState.toggleFocusedCell(1);
+        assertEquals(java.util.Optional.empty(), ClientProtocolState.focusedObjective());
+    }
+
+    @Test
+    void clientDropsFocusWhenReplacementCardIsSmaller() {
+        ClientProtocolState.clear();
+        ClientProtocolState.accept(new BingoCardPayload(
+                "red", "STANDARD", java.util.List.of("[ ] stone | [ ] dirt")));
+        ClientProtocolState.toggleFocusedCell(1);
+
+        ClientProtocolState.accept(new BingoCardPayload("red", "STANDARD", java.util.List.of("[ ] stone")));
+
+        assertEquals(-1, ClientProtocolState.focusedCell());
         assertEquals(java.util.Optional.empty(), ClientProtocolState.focusedObjective());
     }
 }

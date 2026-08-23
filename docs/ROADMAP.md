@@ -50,6 +50,7 @@
 - [x] Adaptive full-card grid and bounded HUD width for narrow screens.
 - [x] Full cell-text tooltips and a rebindable HUD toggle.
 - [x] Allow players to focus a card cell and keep its objective visible in the HUD.
+- [x] Refresh an open full-card screen from live snapshots and show localized interaction hints.
 - Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.

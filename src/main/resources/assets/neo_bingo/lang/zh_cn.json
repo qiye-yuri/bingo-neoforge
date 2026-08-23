@@ -32,5 +32,6 @@
   "key.neo_bingo.toggle_hud": "切换宾果 HUD",
   "hud.neo_bingo.focused": "关注：%s",
   "screen.neo_bingo.card": "宾果卡",
+  "screen.neo_bingo.card.hint": "左键点击格子以关注目标 · Esc 关闭",
   "screen.neo_bingo.card.title": "队伍 %s · %s"
 }

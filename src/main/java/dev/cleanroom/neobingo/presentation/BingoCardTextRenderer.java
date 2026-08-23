@@ -19,7 +19,7 @@ public final class BingoCardTextRenderer {
         for (int row = 0; row < game.card().size(); row++) {
             int rowStart = row * game.card().size();
             rows.add(IntStream.range(rowStart, rowStart + game.card().size())
-                    .mapToObj(index -> marker(game, team, index) + game.card().objectiveAt(index).value())
+                    .mapToObj(index -> marker(game, team, index) + objective(game, team, index))
                     .reduce((left, right) -> left + " | " + right)
                     .orElse(""));
         }
@@ -28,5 +28,12 @@ public final class BingoCardTextRenderer {
 
     private static String marker(BingoGame game, TeamId team, int tileIndex) {
         return game.isClaimedBy(team, tileIndex) ? "[✓] " : "[ ] ";
+    }
+
+    private static String objective(BingoGame game, TeamId team, int tileIndex) {
+        boolean claimedByViewer = game.isClaimedBy(team, tileIndex);
+        return game.mode().visibilityRule().isVisible(claimedByViewer)
+                ? game.card().objectiveAt(tileIndex).value()
+                : "???";
     }
 }

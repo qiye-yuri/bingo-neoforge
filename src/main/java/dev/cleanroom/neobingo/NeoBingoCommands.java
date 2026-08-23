@@ -48,7 +48,8 @@ public final class NeoBingoCommands {
                                         LongArgumentType.getLong(context, "seed"),
                                         GameMode.STANDARD))))
                         .then(modeStartCommand("standard", GameMode.STANDARD))
-                        .then(modeStartCommand("lockout", GameMode.LOCKOUT)))
+                        .then(modeStartCommand("lockout", GameMode.LOCKOUT))
+                        .then(modeStartCommand("hidden", GameMode.HIDDEN)))
                 .then(Commands.literal("reroll")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> reroll(
@@ -191,6 +192,7 @@ public final class NeoBingoCommands {
         return switch (mode) {
             case STANDARD -> Component.translatable("commands.neo_bingo.mode.standard");
             case LOCKOUT -> Component.translatable("commands.neo_bingo.mode.lockout");
+            case HIDDEN -> Component.translatable("commands.neo_bingo.mode.hidden");
         };
     }
 

@@ -31,6 +31,7 @@
 - [x] Periodic server-authoritative inventory evaluation for online team members.
 - [x] Original English and Simplified Chinese command-feedback resources.
 - [x] Standard and lockout claim behavior extracted into independent rule strategies.
+- [x] Isolated visibility strategy and optional hidden mode.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - Versioned JSON schema, validation, data generation, and migration tests.
 

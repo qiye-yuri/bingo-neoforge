@@ -9,6 +9,7 @@
   "commands.neo_bingo.join.success": "已加入队伍 %s",
   "commands.neo_bingo.leave.success": "已离开当前队伍",
   "commands.neo_bingo.mode.lockout": "锁定",
+  "commands.neo_bingo.mode.hidden": "隐藏",
   "commands.neo_bingo.mode.standard": "标准",
   "commands.neo_bingo.reroll.success": "已重新生成宾果卡，种子：%s",
   "commands.neo_bingo.start.success": "宾果游戏已开始，模式：%s，种子：%s",

@@ -27,4 +27,19 @@ class BingoCardTextRendererTest {
                 "[ ] minecraft:item_2 | [ ] minecraft:item_3"),
                 BingoCardTextRenderer.render(game, RED));
     }
+
+    @Test
+    void hiddenModeRevealsOnlyObjectivesClaimedByViewingTeam() {
+        List<ObjectiveId> objectives = IntStream.range(0, 4)
+                .mapToObj(index -> new ObjectiveId("minecraft:item_" + index))
+                .toList();
+        BingoGame game = new BingoGame(new BingoCard(2, objectives), GameMode.HIDDEN);
+        game.claim(RED, 1);
+        game.claim(new TeamId("blue"), 2);
+
+        assertEquals(List.of(
+                "[ ] ??? | [✓] minecraft:item_1",
+                "[ ] ??? | [ ] ???"),
+                BingoCardTextRenderer.render(game, RED));
+    }
 }

@@ -31,6 +31,16 @@ class BingoSessionNbtCodecTest {
     }
 
     @Test
+    void hiddenModeSurvivesNbtRoundTrip() {
+        BingoSession session = runningSession(GameMode.HIDDEN);
+
+        CompoundTag encoded = BingoSessionNbtCodec.encode(session.snapshot());
+        BingoSession restored = BingoSession.restore(BingoSessionNbtCodec.decode(encoded));
+
+        assertEquals(GameMode.HIDDEN, restored.game().orElseThrow().mode());
+    }
+
+    @Test
     void rejectsUnknownSchemaVersion() {
         CompoundTag encoded = BingoSessionNbtCodec.encode(runningSession().snapshot());
         encoded.putInt("schema_version", 99);
@@ -47,12 +57,16 @@ class BingoSessionNbtCodecTest {
     }
 
     private static BingoSession runningSession() {
+        return runningSession(GameMode.LOCKOUT);
+    }
+
+    private static BingoSession runningSession(GameMode mode) {
         List<ObjectiveId> objectives = IntStream.range(0, 25)
                 .mapToObj(index -> new ObjectiveId("test:objective_" + index))
                 .toList();
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);
-        session.start(5, objectives, 42L, GameMode.LOCKOUT);
+        session.start(5, objectives, 42L, mode);
         return session;
     }
 }

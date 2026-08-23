@@ -20,7 +20,7 @@ Status: the first playable server-side slice is in development. Team lobbies,
 Enhanced NeoForge clients use the optional versioned `neo_bingo:protocol_version`
 channel. Servers do not require this channel, so vanilla clients remain supported.
 
-The enhanced client shows a compact 5x5 icon card in the top-right corner. Press `B` for a full team-colored card with completion, hidden-tile, item-icon, and hover states; press `H` to toggle the HUD.
+The enhanced client shows a compact 5x5 icon card in the top-right corner. Press `B` for a full team-colored card with completion, hidden-tile, item-icon, and hover states; press `H` to toggle the HUD. The HUD defaults are tuned for 1920x1080 and follow GUI scaling. Press `P` to cycle through all four corners, or `[` / `]` to resize it from 50% to 200% in 10% steps. Client settings are persisted.
 
 ## Installation and first game
 
@@ -80,16 +80,6 @@ Run loader-aware integration tests with:
 After a game ends, the first player to join creates a new lobby.
 During a running game, the server also checks online team members' inventories
 once per second and automatically claims new matching objectives.
-
-## Clean-room rule
-
-Do not copy or mechanically translate source, resources, translations, UI
-layouts, names, or documentation from Yet Another Bingo. See
-`docs/CLEAN_ROOM.md` before contributing.
-
-This project is not affiliated with or endorsed by HorrificDev. "Yet Another
-Bingo" is used only to identify the compatibility target discussed in the
-clean-room records.
 
 ## Roadmap
 

@@ -32,6 +32,20 @@ A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo 
 
 ## Build
 
+### One-click Windows build
+
+After installing Java 21, double-click [`构建模组.bat`](构建模组.bat) in the repository root. It runs the full build and unit tests, verifies the NeoForge metadata, then copies the installable JAR and its SHA-256 file to `dist`.
+
+Install `dist/neo_bingo-<version>.jar` into the `mods` directory of a Minecraft 1.21.1 instance running NeoForge 21.1.248. The first build downloads dependencies; later builds reuse the Gradle cache.
+
+The same helper can be run from PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
+```
+
+### Regular build
+
 ```text
 ./gradlew build
 ```

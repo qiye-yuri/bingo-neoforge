@@ -29,6 +29,25 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 
 ## 构建
 
+### Windows 一键构建
+
+安装 Java 21 后，直接双击仓库根目录的 [`构建模组.bat`](构建模组.bat)。脚本会完成以下操作：
+
+1. 检查当前 `java` 是否为 Java 21。
+2. 使用仓库自带的 Gradle Wrapper 执行完整构建和单元测试。
+3. 验证 JAR 内含 NeoForge 模组元数据。
+4. 将可安装 JAR 复制到 `dist`，并生成对应的 `.sha256` 校验文件。
+
+构建成功后，把 `dist/neo_bingo-<版本>.jar` 放入 Minecraft 1.21.1 NeoForge 21.1.248 实例的 `mods` 文件夹。首次构建需要联网下载依赖，后续构建会复用 Gradle 缓存。
+
+也可以在 PowerShell 中运行同一脚本：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
+```
+
+### 常规构建
+
 ```text
 ./gradlew build
 ```

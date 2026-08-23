@@ -24,4 +24,19 @@ class BingoCardPayloadTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new BingoCardPayload("red", "STANDARD", java.util.Collections.nCopies(10, "row")));
     }
+
+    @Test
+    void rejectsInvalidMetadataAndIrregularGrids() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new BingoCardPayload("Invalid Team", "STANDARD", List.of("row")));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BingoCardPayload("red", "standard", List.of("row")));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BingoCardPayload("red", "STANDARD", List.of("a | b", "c")));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BingoCardPayload("red", "STANDARD", List.of(String.join(
+                        " | ", java.util.Collections.nCopies(10, "cell")))));
+        assertThrows(IllegalArgumentException.class,
+                () -> new BingoCardPayload("red", "STANDARD", List.of("x".repeat(2049))));
+    }
 }

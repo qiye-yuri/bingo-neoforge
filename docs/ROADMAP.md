@@ -62,6 +62,7 @@
 ## Phase 4 — integrations and hardening
 
 - Optional recipe-viewer and voice-chat integrations behind compile-time APIs.
+- [x] Harden client card payload metadata, text-length, and grid-shape boundaries.
 - Permissions, performance tests, compatibility matrix, and release automation.
 
 ## Architecture boundaries

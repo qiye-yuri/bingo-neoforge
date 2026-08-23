@@ -5,8 +5,10 @@ import dev.cleanroom.neobingo.application.ObjectiveClaimService;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
+import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -49,11 +51,13 @@ public final class InventoryClaimTicker {
                 continue;
             }
             changed = true;
+            TeamId team = session.roster().teamOf(playerId).orElseThrow();
+            NeoBingoNetwork.syncTeamCard(session, team, players);
             player.sendSystemMessage(Component.translatable(
                     "commands.neo_bingo.claim.automatic", result.claimedTiles().size()));
             if (result.state() == SessionState.FINISHED) {
-                result.winner().ifPresent(team -> server.getPlayerList().broadcastSystemMessage(
-                        Component.translatable("commands.neo_bingo.win", team.value()),
+                result.winner().ifPresent(winner -> server.getPlayerList().broadcastSystemMessage(
+                        Component.translatable("commands.neo_bingo.win", winner.value()),
                         false));
                 break;
             }

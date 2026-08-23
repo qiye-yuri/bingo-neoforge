@@ -134,6 +134,7 @@ public final class NeoBingoCommands {
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.start(definition.size(), definition.objectives(), seed, mode);
         data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.start.success", modeName(mode), seed), true);
     }
@@ -144,6 +145,7 @@ public final class NeoBingoCommands {
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.reroll(definition.size(), definition.objectives(), seed);
         data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.reroll.success", seed), true);
     }
 
@@ -153,6 +155,7 @@ public final class NeoBingoCommands {
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.startRanked(definition.size(), definition.objectives(), seed, Math.multiplyExact(seconds, 20L));
         data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.start.ranked.success", seconds, seed), true);
     }
@@ -195,11 +198,14 @@ public final class NeoBingoCommands {
         }
 
         data.store(session);
+        TeamId team = session.roster().teamOf(new PlayerId(player.getUUID())).orElseThrow();
+        NeoBingoNetwork.syncTeamCard(
+                session, team, source.getServer().getPlayerList().getPlayers());
         source.sendSuccess(
                 () -> Component.translatable("commands.neo_bingo.claim.success", result.claimedTiles().size()),
                 true);
-        result.winner().ifPresent(team -> source.sendSuccess(
-                () -> Component.translatable("commands.neo_bingo.win", team.value()),
+        result.winner().ifPresent(winner -> source.sendSuccess(
+                () -> Component.translatable("commands.neo_bingo.win", winner.value()),
                 true));
     }
 

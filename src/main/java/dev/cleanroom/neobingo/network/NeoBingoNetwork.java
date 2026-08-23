@@ -3,6 +3,8 @@ package dev.cleanroom.neobingo.network;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.server.level.ServerPlayer;
 import dev.cleanroom.neobingo.domain.BingoGame;
+import dev.cleanroom.neobingo.domain.BingoSession;
+import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -53,5 +55,20 @@ public final class NeoBingoNetwork {
                 team.value(),
                 game.mode().name(),
                 BingoCardTextRenderer.render(game, team)));
+    }
+
+    public static void syncTeamCard(BingoSession session, TeamId team, Iterable<ServerPlayer> players) {
+        BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
+        for (ServerPlayer player : players) {
+            if (session.roster().teamOf(new PlayerId(player.getUUID())).filter(team::equals).isPresent()) {
+                sendCardIfSupported(player, game, team);
+            }
+        }
+    }
+
+    public static void syncAllCards(BingoSession session, Iterable<ServerPlayer> players) {
+        for (TeamId team : session.roster().assignments().values().stream().distinct().toList()) {
+            syncTeamCard(session, team, players);
+        }
     }
 }

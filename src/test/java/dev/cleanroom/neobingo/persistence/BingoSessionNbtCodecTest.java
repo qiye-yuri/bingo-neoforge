@@ -41,6 +41,16 @@ class BingoSessionNbtCodecTest {
     }
 
     @Test
+    void rankedModeSurvivesNbtRoundTrip() {
+        BingoSession session = runningSession(GameMode.RANKED);
+
+        CompoundTag encoded = BingoSessionNbtCodec.encode(session.snapshot());
+        BingoSession restored = BingoSession.restore(BingoSessionNbtCodec.decode(encoded));
+
+        assertEquals(GameMode.RANKED, restored.game().orElseThrow().mode());
+    }
+
+    @Test
     void rejectsUnknownSchemaVersion() {
         CompoundTag encoded = BingoSessionNbtCodec.encode(runningSession().snapshot());
         encoded.putInt("schema_version", 99);

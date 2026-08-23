@@ -35,6 +35,7 @@
 - [x] Inventory objective completion extracted into an independent strategy.
 - [x] Independent score-ranking strategy with deterministic tie handling.
 - [x] Line victory and no-automatic-victory behavior extracted into independent strategies.
+- [x] Compose ranked-mode domain rules without premature line completion.
 - Complete ranked mode with a persistent time limit.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.

@@ -201,6 +201,7 @@ public final class NeoBingoCommands {
             case STANDARD -> Component.translatable("commands.neo_bingo.mode.standard");
             case LOCKOUT -> Component.translatable("commands.neo_bingo.mode.lockout");
             case HIDDEN -> Component.translatable("commands.neo_bingo.mode.hidden");
+            case RANKED -> Component.translatable("commands.neo_bingo.mode.ranked");
         };
     }
 

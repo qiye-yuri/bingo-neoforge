@@ -10,6 +10,7 @@
   "commands.neo_bingo.leave.success": "Left the current team",
   "commands.neo_bingo.mode.lockout": "Lockout",
   "commands.neo_bingo.mode.hidden": "Hidden",
+  "commands.neo_bingo.mode.ranked": "Ranked",
   "commands.neo_bingo.mode.standard": "Standard",
   "commands.neo_bingo.reroll.success": "Generated a new bingo card with seed %s",
   "commands.neo_bingo.start.success": "Bingo game started in %s mode with seed %s",

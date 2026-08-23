@@ -63,6 +63,21 @@ class BingoSessionTest {
     }
 
     @Test
+    void rankedModeDoesNotFinishWhenATeamCompletesLine() {
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
+        session.start(5, pool(), 42L, GameMode.RANKED);
+
+        for (int column = 0; column < 5; column++) {
+            session.claim(PLAYER, column);
+        }
+
+        assertEquals(SessionState.RUNNING, session.state());
+        assertTrue(session.winner().isEmpty());
+        assertEquals(5, session.game().orElseThrow().score(RED));
+    }
+
+    @Test
     void operatorCanEndARunningGameWithoutWinner() {
         BingoSession session = runningSession();
 

@@ -33,14 +33,16 @@ public final class NeoBingoCommands {
     public static void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("neobingo")
                 .then(Commands.literal("join")
+                        .requires(NeoBingoPermissions::canPlay)
                         .then(Commands.argument("team", StringArgumentType.word())
                                 .executes(context -> run(context.getSource(), () -> join(
                                         context.getSource(),
                                         StringArgumentType.getString(context, "team"))))))
                 .then(Commands.literal("leave")
+                        .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> leave(context.getSource()))))
                 .then(Commands.literal("start")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
                                 context.getSource().getLevel().getRandom().nextLong(),
@@ -55,7 +57,7 @@ public final class NeoBingoCommands {
                         .then(modeStartCommand("hidden", GameMode.HIDDEN))
                         .then(rankedStartCommand()))
                 .then(Commands.literal("reroll")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> reroll(
                                 context.getSource(),
                                 context.getSource().getLevel().getRandom().nextLong())))
@@ -64,13 +66,16 @@ public final class NeoBingoCommands {
                                         context.getSource(),
                                         LongArgumentType.getLong(context, "seed"))))))
                 .then(Commands.literal("card")
+                        .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
                 .then(Commands.literal("claim")
+                        .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> claim(context.getSource()))))
                 .then(Commands.literal("status")
+                        .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> showStatus(context.getSource()))))
                 .then(Commands.literal("end")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> end(context.getSource())))));
     }
 

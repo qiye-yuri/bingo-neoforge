@@ -66,6 +66,7 @@
 - [x] Harden client card payload metadata, text-length, and grid-shape boundaries.
 - [x] Localize command failures without exposing internal exception text to clients.
 - [x] Run GameTests in CI and archive the mod JAR and test reports.
+- [x] Register play and administration command nodes that permission plugins can override.
 - Permissions, performance tests, compatibility matrix, and release automation.
 
 ## Architecture boundaries

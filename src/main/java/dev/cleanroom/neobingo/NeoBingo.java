@@ -18,6 +18,7 @@ public final class NeoBingo {
         modBus.addListener(NeoBingoGameTests::register);
         modBus.addListener(NeoBingoNetwork::register);
         NeoForge.EVENT_BUS.addListener(BingoCardDefinitions::registerReloadListener);
+        NeoForge.EVENT_BUS.addListener(NeoBingoPermissions::register);
         NeoForge.EVENT_BUS.addListener(NeoBingoCommands::register);
         NeoForge.EVENT_BUS.addListener(InventoryClaimTicker::onServerTick);
         NeoForge.EVENT_BUS.addListener(RankedCountdownTicker::onServerTick);

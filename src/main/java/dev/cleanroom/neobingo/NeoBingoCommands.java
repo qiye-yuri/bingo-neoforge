@@ -11,6 +11,7 @@ import dev.cleanroom.neobingo.config.BingoCardDefinition;
 import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
+import dev.cleanroom.neobingo.domain.DifficultyPreset;
 import dev.cleanroom.neobingo.domain.GameMode;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
@@ -47,12 +48,14 @@ public final class NeoBingoCommands {
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
                                 context.getSource().getLevel().getRandom().nextLong(),
-                                GameMode.STANDARD)))
+                                GameMode.STANDARD,
+                                DifficultyPreset.MEDIUM)))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> run(context.getSource(), () -> start(
                                         context.getSource(),
                                         LongArgumentType.getLong(context, "seed"),
-                                        GameMode.STANDARD))))
+                                        GameMode.STANDARD,
+                                        DifficultyPreset.MEDIUM))))
                         .then(modeStartCommand("standard", GameMode.STANDARD))
                         .then(modeStartCommand("lockout", GameMode.LOCKOUT))
                         .then(modeStartCommand("hidden", GameMode.HIDDEN))
@@ -99,12 +102,34 @@ public final class NeoBingoCommands {
                 .executes(context -> run(context.getSource(), () -> start(
                         context.getSource(),
                         context.getSource().getLevel().getRandom().nextLong(),
-                        mode)))
+                        mode,
+                        DifficultyPreset.MEDIUM)))
                 .then(Commands.argument("seed", LongArgumentType.longArg())
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
                                 LongArgumentType.getLong(context, "seed"),
-                                mode))));
+                                mode,
+                                DifficultyPreset.MEDIUM))))
+                .then(difficultyCommands(mode));
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> difficultyCommands(GameMode mode) {
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("difficulty");
+        for (DifficultyPreset preset : DifficultyPreset.values()) {
+            root.then(Commands.literal(preset.name().toLowerCase())
+                    .executes(context -> run(context.getSource(), () -> start(
+                            context.getSource(),
+                            context.getSource().getLevel().getRandom().nextLong(),
+                            mode,
+                            preset)))
+                    .then(Commands.argument("seed", LongArgumentType.longArg())
+                            .executes(context -> run(context.getSource(), () -> start(
+                                    context.getSource(),
+                                    LongArgumentType.getLong(context, "seed"),
+                                    mode,
+                                    preset)))));
+        }
+        return root;
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> rankedStartCommand() {
@@ -134,11 +159,11 @@ public final class NeoBingoCommands {
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.leave.success"), false);
     }
 
-    private static void start(CommandSourceStack source, long seed, GameMode mode) {
+    private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyPreset difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
-        session.start(definition.size(), definition.objectives(), seed, mode);
+        session.start(definition.size(), BingoCardDefinitions.objectives(difficulty, seed), seed, mode);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(

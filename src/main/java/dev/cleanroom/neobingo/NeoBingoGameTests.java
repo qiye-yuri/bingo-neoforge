@@ -165,7 +165,8 @@ public final class NeoBingoGameTests {
         PlayerId playerId = new PlayerId(player.getUUID());
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
-        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo start standard 42");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo start standard difficulty max 42");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
 
         BingoSession running = data.restoreSession().orElseThrow();

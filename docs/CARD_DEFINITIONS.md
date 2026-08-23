@@ -45,3 +45,14 @@ property when using PowerShell.
 
 The task creates parent directories, validates the size and unique objective
 count, and writes deterministic UTF-8 JSON in the current schema version.
+
+## Difficulty tiers
+
+The first 50 objectives are grouped in easy-to-impossible order with group sizes 16, 10, 8, 8, and 8. Existing start commands default to `medium`. A difficulty can be selected explicitly:
+
+```text
+/neobingo start standard difficulty easy 42
+/neobingo start lockout difficulty max 42
+```
+
+The presets are `easy`, `medium`, `hard`, `extreme`, `impossible`, and `max`. `max` initially matches impossible and can be manually adjusted in `DifficultyPreset.MAX`. Its five counts must total 25 and fit their target pools.

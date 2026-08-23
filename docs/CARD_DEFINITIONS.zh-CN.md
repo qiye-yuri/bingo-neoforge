@@ -37,3 +37,14 @@ Neo Bingo 从 `data/neo_bingo/bingo_cards/default.json` 加载默认 Bingo 卡�
 ```
 
 该任务会创建父目录、校验卡片尺寸和目标唯一数量，并按照当前 Schema 版本写出确定性的 UTF-8 JSON。
+
+## 难度分级
+
+默认定义的前 50 个目标按 easy、medium、hard、extreme、impossible 顺序分组，数量依次为 16、10、8、8、8。旧的开局命令默认使用 `medium`。也可以显式选择难度：
+
+```text
+/neobingo start standard difficulty easy 42
+/neobingo start lockout difficulty max 42
+```
+
+内置预设为 `easy`、`medium`、`hard`、`extreme`、`impossible` 和 `max`。`max` 初始采用 impossible 的配比，便于在 `DifficultyPreset.MAX` 中手动调整五个等级的抽取数量；总数必须保持为 25，并且不能超过对应目标池的容量。

@@ -1,7 +1,13 @@
 package dev.cleanroom.neobingo.config;
 
 import dev.cleanroom.neobingo.NeoBingo;
+import dev.cleanroom.neobingo.domain.DifficultyCardGenerator;
+import dev.cleanroom.neobingo.domain.DifficultyPreset;
+import dev.cleanroom.neobingo.domain.DifficultyTier;
+import dev.cleanroom.neobingo.domain.ObjectiveId;
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -28,6 +34,20 @@ public final class BingoCardDefinitions {
             throw new IllegalStateException("Bingo 卡定义尚未加载");
         }
         return definition;
+    }
+
+    public static List<ObjectiveId> objectives(DifficultyPreset preset, long seed) {
+        List<ObjectiveId> objectives = current().objectives();
+        if (objectives.size() < 50) {
+            throw new IllegalStateException("启用难度分级至少需要 50 个按难度排序的目标");
+        }
+        var tiers = new EnumMap<DifficultyTier, List<ObjectiveId>>(DifficultyTier.class);
+        tiers.put(DifficultyTier.EASY, objectives.subList(0, 16));
+        tiers.put(DifficultyTier.MEDIUM, objectives.subList(16, 26));
+        tiers.put(DifficultyTier.HARD, objectives.subList(26, 34));
+        tiers.put(DifficultyTier.EXTREME, objectives.subList(34, 42));
+        tiers.put(DifficultyTier.IMPOSSIBLE, objectives.subList(42, 50));
+        return DifficultyCardGenerator.generate(tiers, preset, seed);
     }
 
     private static void reload(ResourceManager resources) {

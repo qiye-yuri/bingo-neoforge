@@ -8,6 +8,7 @@ import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -25,7 +26,8 @@ class ObjectiveClaimServiceTest {
         ObjectiveId first = session.game().orElseThrow().card().objectiveAt(0);
         ObjectiveId third = session.game().orElseThrow().card().objectiveAt(2);
 
-        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, Set.of(first, third));
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session, PLAYER, Set.of(first, third), InventoryPresenceRule.INSTANCE);
 
         assertEquals(List.of(0, 2), result.claimedTiles());
         assertEquals(SessionState.RUNNING, result.state());
@@ -37,11 +39,26 @@ class ObjectiveClaimServiceTest {
         BingoSession session = runningSession();
         Set<ObjectiveId> completed = Set.copyOf(session.game().orElseThrow().card().objectives());
 
-        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, completed);
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session, PLAYER, completed, InventoryPresenceRule.INSTANCE);
 
         assertEquals(List.of(0, 1, 2, 3, 4), result.claimedTiles());
         assertEquals(SessionState.FINISHED, result.state());
         assertEquals(RED, result.winner().orElseThrow());
+    }
+
+    @Test
+    void delegatesCompletionDecisionToSelectedRule() {
+        BingoSession session = runningSession();
+        ObjectiveId selected = session.game().orElseThrow().card().objectiveAt(7);
+
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session,
+                PLAYER,
+                Set.of(),
+                (objective, observed) -> objective.equals(selected));
+
+        assertEquals(List.of(7), result.claimedTiles());
     }
 
     private static BingoSession runningSession() {

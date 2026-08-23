@@ -14,6 +14,7 @@ import dev.cleanroom.neobingo.domain.GameMode;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import net.minecraft.commands.CommandSourceStack;
@@ -157,7 +158,8 @@ public final class NeoBingoCommands {
         ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
                 session,
                 new PlayerId(player.getUUID()),
-                ServerInventoryObjectiveReader.read(player));
+                ServerInventoryObjectiveReader.read(player),
+                InventoryPresenceRule.INSTANCE);
         if (result.claimedTiles().isEmpty()) {
             source.sendSuccess(() -> Component.translatable("commands.neo_bingo.claim.empty"), false);
             return;

@@ -8,6 +8,7 @@ import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,8 @@ public final class NeoBingoGameTests {
         BingoSession session = runningSession();
         ObjectiveId objective = session.game().orElseThrow().card().objectiveAt(3);
 
-        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, Set.of(objective));
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session, PLAYER, Set.of(objective), InventoryPresenceRule.INSTANCE);
 
         helper.assertValueEqual(result.claimedTiles(), List.of(3), "服务端观察到的目标应认领对应格子");
         helper.assertValueEqual(session.game().orElseThrow().score(RED), 1, "队伍分数应随认领增加");
@@ -55,7 +57,8 @@ public final class NeoBingoGameTests {
         BingoSession session = runningSession();
         Set<ObjectiveId> firstRow = Set.copyOf(session.game().orElseThrow().card().objectives().subList(0, 5));
 
-        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(session, PLAYER, firstRow);
+        ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
+                session, PLAYER, firstRow, InventoryPresenceRule.INSTANCE);
 
         helper.assertValueEqual(result.state(), SessionState.FINISHED, "完成连线后游戏应结束");
         helper.assertValueEqual(result.winner().orElseThrow(), RED, "完成连线的队伍应获胜");
@@ -84,9 +87,11 @@ public final class NeoBingoGameTests {
         session.start(5, objectives(), 42L, GameMode.LOCKOUT);
         ObjectiveId objective = session.game().orElseThrow().card().objectiveAt(0);
 
-        ObjectiveClaimService.claimCompleted(session, PLAYER, Set.of(objective));
+        ObjectiveClaimService.claimCompleted(
+                session, PLAYER, Set.of(objective), InventoryPresenceRule.INSTANCE);
         ClaimBatchResult secondResult =
-                ObjectiveClaimService.claimCompleted(session, SECOND_PLAYER, Set.of(objective));
+                ObjectiveClaimService.claimCompleted(
+                        session, SECOND_PLAYER, Set.of(objective), InventoryPresenceRule.INSTANCE);
 
         helper.assertTrue(secondResult.claimedTiles().isEmpty(), "锁定格子不应被第二支队伍认领");
         helper.assertFalse(session.game().orElseThrow().isClaimedBy(BLUE, 0), "第二支队伍不应拥有锁定格子");

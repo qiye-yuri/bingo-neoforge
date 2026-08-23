@@ -5,6 +5,7 @@ import dev.cleanroom.neobingo.application.ObjectiveClaimService;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
+import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import java.util.List;
 import net.minecraft.network.chat.Component;
@@ -42,7 +43,8 @@ public final class InventoryClaimTicker {
             ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
                     session,
                     playerId,
-                    ServerInventoryObjectiveReader.read(player));
+                    ServerInventoryObjectiveReader.read(player),
+                    InventoryPresenceRule.INSTANCE);
             if (result.claimedTiles().isEmpty()) {
                 continue;
             }

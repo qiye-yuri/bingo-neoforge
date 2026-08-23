@@ -26,5 +26,9 @@
   "commands.neo_bingo.status.standing": "%s. %s — %s point(s)",
   "commands.neo_bingo.status.winner": "Winner: %s",
   "commands.neo_bingo.win": "Team %s completed a line and won",
-  "mod.neo_bingo.name": "Neo Bingo"
+  "mod.neo_bingo.name": "Neo Bingo",
+  "key.categories.neo_bingo": "Neo Bingo",
+  "key.neo_bingo.open_card": "Open bingo card",
+  "screen.neo_bingo.card": "Bingo Card",
+  "screen.neo_bingo.card.title": "Team %s · %s"
 }

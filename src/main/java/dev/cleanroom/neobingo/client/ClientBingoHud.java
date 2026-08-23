@@ -10,6 +10,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** 在增强客户端右上角绘制最近同步的宾果卡。 */
 @EventBusSubscriber(modid = NeoBingo.MOD_ID, value = Dist.CLIENT)
@@ -36,6 +37,14 @@ public final class ClientBingoHud {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientProtocolState.clear();
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        while (ClientKeyMappings.OPEN_CARD.consumeClick()) {
+            ClientProtocolState.latestCard().ifPresent(card -> minecraft.setScreen(new BingoCardScreen(card)));
+        }
     }
 
     private static void draw(GuiGraphics graphics, Font font, String title, java.util.List<String> rows) {

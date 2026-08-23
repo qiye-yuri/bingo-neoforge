@@ -19,7 +19,11 @@ class LanguageResourcesTest {
 
         assertEquals(english.keySet(), chinese.keySet());
         assertTrue(english.keySet().stream().allMatch(key ->
-                key.startsWith("commands.neo_bingo.") || key.startsWith("mod.neo_bingo.")));
+                key.startsWith("commands.neo_bingo.")
+                        || key.startsWith("mod.neo_bingo.")
+                        || key.startsWith("key.neo_bingo.")
+                        || key.startsWith("key.categories.neo_bingo")
+                        || key.startsWith("screen.neo_bingo.")));
         english.keySet().forEach(key -> assertEquals(
                 placeholderCount(english.get(key).getAsString()),
                 placeholderCount(chinese.get(key).getAsString()),

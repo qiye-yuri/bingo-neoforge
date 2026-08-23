@@ -26,5 +26,9 @@
   "commands.neo_bingo.status.standing": "第 %s 名：%s（%s 分）",
   "commands.neo_bingo.status.winner": "胜者：%s",
   "commands.neo_bingo.win": "队伍 %s 完成连线并获胜",
-  "mod.neo_bingo.name": "Neo Bingo"
+  "mod.neo_bingo.name": "Neo Bingo",
+  "key.categories.neo_bingo": "Neo Bingo",
+  "key.neo_bingo.open_card": "打开宾果卡",
+  "screen.neo_bingo.card": "宾果卡",
+  "screen.neo_bingo.card.title": "队伍 %s · %s"
 }

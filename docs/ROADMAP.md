@@ -46,7 +46,8 @@
 ## Phase 3 — client experience
 
 - [x] Initial optional NeoForge bingo HUD using an original text-panel design.
-- Interactive full card screen and original graphical assets.
+- [x] Full bingo-card screen opened by a rebindable key.
+- Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.
 - [x] Synchronize structured card snapshots to enhanced clients while retaining chat cards.

@@ -151,6 +151,24 @@ tasks.named('test', Test).configure {
     useJUnitPlatform()
 }
 
+tasks.register('generateBingoCardDefinition', JavaExec) {
+    group = 'neo bingo'
+    description = '根据 -PbingoOutput、-PbingoSize 和 -PbingoObjectives 生成宾果卡定义。'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.cleanroom.neobingo.config.BingoCardDefinitionGenerator'
+    dependsOn tasks.named('classes')
+    doFirst {
+        def output = providers.gradleProperty('bingoOutput').orNull
+        def size = providers.gradleProperty('bingoSize').orNull
+        def objectives = providers.gradleProperty('bingoObjectives').orNull
+        if (!output || !size || !objectives) {
+            throw new GradleException('必须提供 -PbingoOutput、-PbingoSize 和逗号分隔的 -PbingoObjectives')
+        }
+        args output, size
+        args objectives.split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+    }
+}
+
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

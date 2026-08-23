@@ -29,3 +29,19 @@ The definition is revalidated whenever server resources reload.
 Reload fails rather than silently accepting an invalid definition. Existing
 running games retain the card saved in their world data; the new definition is
 used the next time a game starts.
+
+The machine-readable schema is bundled at
+`data/neo_bingo/bingo_cards/schema.json`. Version 0 definitions using
+`card_size` are migrated to version 1 when loaded.
+
+## Generator
+
+Generate a definition with the Gradle task below. Quote the comma-separated
+property when using PowerShell.
+
+```text
+./gradlew generateBingoCardDefinition -PbingoOutput=card.json -PbingoSize=2 "-PbingoObjectives=minecraft:stone,minecraft:dirt,minecraft:apple,minecraft:bread"
+```
+
+The task creates parent directories, validates the size and unique objective
+count, and writes deterministic UTF-8 JSON in the current schema version.

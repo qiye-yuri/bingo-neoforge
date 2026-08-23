@@ -35,7 +35,7 @@
 - [x] Inventory objective completion extracted into an independent strategy.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
-- Bingo-card definition data generator.
+- [x] Bingo-card definition generator with strict round-trip validation and a Gradle entry point.
 
 ## Phase 3 — client experience
 

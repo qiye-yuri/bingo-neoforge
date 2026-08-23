@@ -6,7 +6,7 @@ Neo Bingo is a new, independent NeoForge mod that implements a multiplayer
 team bingo game mode from a public behavioral specification.
 
 Status: the first playable server-side slice is in development. Team lobbies,
-5x5 standard and lockout cards, world-save persistence, and basic commands are available.
+5x5 standard, lockout, and hidden cards, world-save persistence, and basic commands are available.
 
 ## Target
 
@@ -36,7 +36,7 @@ Run loader-aware integration tests with:
 - `/neobingo join <team>` joins or changes team while the lobby is open.
 - `/neobingo leave` leaves the current team while the lobby is open.
 - `/neobingo start [seed]` starts a standard 5x5 game (operator only).
-- `/neobingo start <standard|lockout> [seed]` starts an explicitly selected mode (operator only).
+- `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode (operator only).
 - `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.

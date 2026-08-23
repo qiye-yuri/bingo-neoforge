@@ -4,7 +4,7 @@
 
 Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行为规格实现多人团队宾果游戏模式。
 
-当前状态：正在开发首个可玩的服务端功能切片，已提供队伍大厅、5×5 标准及锁定模式宾果卡、世界存档持久化和基础命令。
+当前状态：正在开发首个可玩的服务端功能切片，已提供队伍大厅、5×5 标准、锁定及隐藏模式宾果卡、世界存档持久化和基础命令。
 
 ## 目标环境
 
@@ -34,7 +34,7 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
 - `/neobingo leave`：在大厅开放期间离开当前队伍。
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，仅管理员可用。
-- `/neobingo start <standard|lockout> [seed]`：明确选择标准或锁定模式并开始游戏，仅管理员可用。
+- `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏，仅管理员可用。
 - `/neobingo reroll [seed]`：保留队伍和模式并重新生成正在运行的卡片，仅管理员可用。
 - `/neobingo card`：在原版聊天栏中显示所在队伍的宾果卡。
 - `/neobingo claim`：立即检查玩家的服务端物品栏，并认领其中匹配的目标。

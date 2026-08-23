@@ -19,6 +19,7 @@ import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
+import dev.cleanroom.neobingo.presentation.BingoModeText;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -141,7 +142,7 @@ public final class NeoBingoCommands {
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         source.sendSuccess(() -> Component.translatable(
-                "commands.neo_bingo.start.success", modeName(mode), seed), true);
+                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), seed), true);
     }
 
     private static void reroll(CommandSourceStack source, long seed) {
@@ -234,7 +235,7 @@ public final class NeoBingoCommands {
                         "commands.neo_bingo.status.team", team.value(), memberCount), false));
         session.game().ifPresent(game -> source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.status.game",
-                modeName(game.mode()),
+                BingoModeText.displayName(game.mode()),
                 session.seed().orElseThrow()), false));
         session.game().ifPresent(game -> game.standings(session.roster().assignments().values()).forEach(standing ->
                 source.sendSuccess(() -> Component.translatable(
@@ -246,15 +247,6 @@ public final class NeoBingoCommands {
                 "commands.neo_bingo.status.winner", winner.value()), false));
         session.remainingTicks().ifPresent(ticks -> source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.status.remaining", (ticks + 19) / 20), false));
-    }
-
-    private static Component modeName(GameMode mode) {
-        return switch (mode) {
-            case STANDARD -> Component.translatable("commands.neo_bingo.mode.standard");
-            case LOCKOUT -> Component.translatable("commands.neo_bingo.mode.lockout");
-            case HIDDEN -> Component.translatable("commands.neo_bingo.mode.hidden");
-            case RANKED -> Component.translatable("commands.neo_bingo.mode.ranked");
-        };
     }
 
     private static Component stateName(SessionState state) {

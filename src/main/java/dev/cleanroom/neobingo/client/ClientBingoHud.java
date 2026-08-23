@@ -2,6 +2,7 @@ package dev.cleanroom.neobingo.client;
 
 import dev.cleanroom.neobingo.NeoBingo;
 import dev.cleanroom.neobingo.network.ClientProtocolState;
+import dev.cleanroom.neobingo.presentation.BingoModeText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +36,8 @@ public final class ClientBingoHud {
             java.util.List<String> rows = new java.util.ArrayList<>(card.rows());
             ClientProtocolState.focusedObjective().ifPresent(objective -> rows.add(
                     Component.translatable("hud.neo_bingo.focused", objective).getString()));
-            draw(event.getGuiGraphics(), minecraft.font, card.team() + " · " + card.mode(), rows);
+            draw(event.getGuiGraphics(), minecraft.font,
+                    card.team() + " · " + BingoModeText.displayName(card.mode()).getString(), rows);
         });
     }
 

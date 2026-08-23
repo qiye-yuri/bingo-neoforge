@@ -2,6 +2,7 @@ package dev.cleanroom.neobingo.client;
 
 import dev.cleanroom.neobingo.network.BingoCardPayload;
 import dev.cleanroom.neobingo.network.ClientProtocolState;
+import dev.cleanroom.neobingo.presentation.BingoModeText;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -49,7 +50,8 @@ public final class BingoCardScreen extends Screen {
         graphics.fill(left - 1, top - 1, left + width + 1, top + height + 1, BORDER);
         graphics.fill(left, top, left + width, top + height, BACKGROUND);
         graphics.drawCenteredString(font,
-                Component.translatable("screen.neo_bingo.card.title", displayedCard.team(), displayedCard.mode()),
+                Component.translatable("screen.neo_bingo.card.title",
+                        displayedCard.team(), BingoModeText.displayName(displayedCard.mode())),
                 this.width / 2, top + 10, BORDER);
         int cellWidth = width / columns;
         String hovered = null;

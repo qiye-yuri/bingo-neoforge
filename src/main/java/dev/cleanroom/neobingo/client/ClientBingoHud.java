@@ -4,25 +4,21 @@ import dev.cleanroom.neobingo.NeoBingo;
 import dev.cleanroom.neobingo.network.ClientProtocolState;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
 import dev.cleanroom.neobingo.presentation.BingoObjectiveText;
+import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
-/** 在增强客户端右上角绘制最近同步的 Bingo 卡。 */
+/** 在增强客户端右上角绘制紧凑的 Bingo 图标卡。 */
 @EventBusSubscriber(modid = NeoBingo.MOD_ID, value = Dist.CLIENT)
 public final class ClientBingoHud {
-    private static final int PADDING = 5;
-    private static final int LINE_HEIGHT = 10;
-    private static final int BACKGROUND = 0xB010141A;
-    private static final int TITLE_COLOR = 0xFFF2C94C;
-    private static final int TEXT_COLOR = 0xFFF2F2F2;
+    private static final int CELL_SIZE = 20;
+    private static final int HEADER_HEIGHT = 18;
 
     private ClientBingoHud() {
     }
@@ -34,14 +30,46 @@ public final class ClientBingoHud {
             return;
         }
         ClientProtocolState.latestCard().ifPresent(card -> {
-            java.util.List<String> rows = card.rows().stream()
-                    .map(BingoObjectiveText::displayRow)
-                    .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
-            ClientProtocolState.focusedObjective().ifPresent(objective -> rows.add(
-                    Component.translatable(
-                            "hud.neo_bingo.focused", BingoObjectiveText.displayObjective(objective)).getString()));
-            draw(event.getGuiGraphics(), minecraft.font,
-                    card.team() + " · " + BingoModeText.displayName(card.mode()).getString(), rows);
+            List<List<BingoCardVisuals.Cell>> grid = BingoCardVisuals.parse(card.rows());
+            int columns = grid.stream().mapToInt(List::size).max().orElse(1);
+            int panelWidth = columns * CELL_SIZE + 8;
+            int panelHeight = grid.size() * CELL_SIZE + HEADER_HEIGHT + 6;
+            int left = event.getGuiGraphics().guiWidth() - panelWidth - 6;
+            int top = 6;
+            int accent = BingoCardVisuals.teamColor(card.team());
+            GuiGraphics graphics = event.getGuiGraphics();
+            graphics.fill(left - 1, top - 1, left + panelWidth + 1, top + panelHeight + 1, 0x90000000);
+            graphics.fill(left, top, left + panelWidth, top + panelHeight, BingoCardVisuals.PANEL);
+            graphics.fill(left, top, left + 3, top + panelHeight, accent);
+            String title = card.team() + " · " + BingoModeText.displayName(card.mode()).getString();
+            graphics.drawString(minecraft.font, minecraft.font.plainSubstrByWidth(title, panelWidth - 10),
+                    left + 6, top + 5, accent, false);
+            int index = 0;
+            for (int row = 0; row < grid.size(); row++) {
+                for (int column = 0; column < grid.get(row).size(); column++) {
+                    BingoCardVisuals.Cell cell = grid.get(row).get(column);
+                    int x = left + 5 + column * CELL_SIZE;
+                    int y = top + HEADER_HEIGHT + row * CELL_SIZE;
+                    int color = cell.claimed() ? BingoCardVisuals.CLAIMED
+                            : cell.hidden() ? BingoCardVisuals.HIDDEN : BingoCardVisuals.CELL;
+                    graphics.fill(x + 1, y + 1, x + CELL_SIZE - 1, y + CELL_SIZE - 1, color);
+                    if (cell.hidden()) {
+                        graphics.drawCenteredString(minecraft.font, "?", x + CELL_SIZE / 2, y + 6,
+                                BingoCardVisuals.MUTED_TEXT);
+                    } else {
+                        BingoObjectiveText.itemForCell(cell.raw()).ifPresent(item ->
+                                graphics.renderItem(item.getDefaultInstance(), x + 2, y + 2));
+                    }
+                    if (cell.claimed()) {
+                        graphics.fill(x + 2, y + 2, x + CELL_SIZE - 2, y + CELL_SIZE - 2,
+                                BingoCardVisuals.CLAIMED_OVERLAY);
+                    }
+                    if (ClientProtocolState.focusedCell() == index) {
+                        graphics.renderOutline(x, y, CELL_SIZE, CELL_SIZE, BingoCardVisuals.FOCUSED);
+                    }
+                    index++;
+                }
+            }
         });
     }
 
@@ -58,25 +86,6 @@ public final class ClientBingoHud {
         }
         while (ClientKeyMappings.TOGGLE_HUD.consumeClick()) {
             ClientProtocolState.toggleHud();
-        }
-    }
-
-    private static void draw(GuiGraphics graphics, Font font, String title, java.util.List<String> rows) {
-        int maximumTextWidth = Math.max(120, graphics.guiWidth() * 45 / 100);
-        java.util.List<String> visibleRows = rows.stream()
-                .map(row -> font.plainSubstrByWidth(row, maximumTextWidth))
-                .toList();
-        String visibleTitle = font.plainSubstrByWidth(title, maximumTextWidth);
-        int width = Math.max(font.width(visibleTitle), visibleRows.stream().mapToInt(font::width).max().orElse(0));
-        int panelWidth = width + PADDING * 2;
-        int panelHeight = (visibleRows.size() + 1) * LINE_HEIGHT + PADDING * 2;
-        int left = graphics.guiWidth() - panelWidth - 6;
-        int top = 6;
-        graphics.fill(left, top, left + panelWidth, top + panelHeight, BACKGROUND);
-        graphics.drawString(font, visibleTitle, left + PADDING, top + PADDING, TITLE_COLOR, false);
-        for (int index = 0; index < visibleRows.size(); index++) {
-            graphics.drawString(font, visibleRows.get(index), left + PADDING,
-                    top + PADDING + (index + 1) * LINE_HEIGHT, TEXT_COLOR, false);
         }
     }
 }

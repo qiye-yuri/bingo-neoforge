@@ -20,6 +20,8 @@ Status: the first playable server-side slice is in development. Team lobbies,
 Enhanced NeoForge clients use the optional versioned `neo_bingo:protocol_version`
 channel. Servers do not require this channel, so vanilla clients remain supported.
 
+The enhanced client shows a compact 5x5 icon card in the top-right corner. Press `B` for a full team-colored card with completion, hidden-tile, item-icon, and hover states; press `H` to toggle the HUD.
+
 ## Installation and first game
 
 1. Install NeoForge 21.1.248 for Minecraft 1.21.1 and run the server with Java 21.

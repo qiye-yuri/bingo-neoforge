@@ -11,6 +11,7 @@ public final class BingoSession {
     private BingoGame game;
     private long seed;
     private TeamId winner;
+    private Long remainingTicks;
 
     public void join(PlayerId player, TeamId team) {
         requireState(SessionState.LOBBY);
@@ -23,6 +24,21 @@ public final class BingoSession {
     }
 
     public void start(int cardSize, List<ObjectiveId> objectivePool, long seed, GameMode mode) {
+        if (mode == GameMode.RANKED) {
+            throw new IllegalArgumentException("Ranked games require an explicit duration");
+        }
+        startGame(cardSize, objectivePool, seed, mode);
+    }
+
+    public void startRanked(int cardSize, List<ObjectiveId> objectivePool, long seed, long durationTicks) {
+        if (durationTicks < 1) {
+            throw new IllegalArgumentException("Ranked duration must be positive");
+        }
+        startGame(cardSize, objectivePool, seed, GameMode.RANKED);
+        remainingTicks = durationTicks;
+    }
+
+    private void startGame(int cardSize, List<ObjectiveId> objectivePool, long seed, GameMode mode) {
         requireState(SessionState.LOBBY);
         if (roster.playerCount() == 0) {
             throw new IllegalStateException("Cannot start a game without players");
@@ -57,6 +73,29 @@ public final class BingoSession {
         state = SessionState.FINISHED;
     }
 
+    public boolean tickRanked() {
+        requireState(SessionState.RUNNING);
+        if (game.mode() != GameMode.RANKED) {
+            return false;
+        }
+        remainingTicks--;
+        if (remainingTicks > 0) {
+            return false;
+        }
+        state = SessionState.FINISHED;
+        var teams = roster.assignments().values();
+        var standings = game.standings(teams);
+        if (!standings.isEmpty()
+                && (standings.size() == 1 || standings.get(0).score() > standings.get(1).score())) {
+            winner = standings.get(0).team();
+        }
+        return true;
+    }
+
+    public Optional<Long> remainingTicks() {
+        return Optional.ofNullable(remainingTicks);
+    }
+
     public SessionState state() {
         return state;
     }
@@ -83,7 +122,8 @@ public final class BingoSession {
                 roster.assignments(),
                 game == null ? Optional.empty() : Optional.of(game.snapshot()),
                 seed(),
-                winner());
+                winner(),
+                remainingTicks());
     }
 
     public static BingoSession restore(BingoSessionSnapshot snapshot) {
@@ -94,8 +134,9 @@ public final class BingoSession {
         restored.game = snapshot.game().map(BingoGame::restore).orElse(null);
         restored.seed = snapshot.seed().orElse(0L);
         restored.winner = snapshot.winner().orElse(null);
+        restored.remainingTicks = snapshot.remainingTicks().orElse(null);
 
-        if (restored.winner != null
+        if (restored.winner != null && restored.game.mode() != GameMode.RANKED
                 && !restored.game.mode().victoryRule().hasWon(restored.game, restored.winner)) {
             throw new IllegalArgumentException("Winner does not satisfy the selected victory rule");
         }

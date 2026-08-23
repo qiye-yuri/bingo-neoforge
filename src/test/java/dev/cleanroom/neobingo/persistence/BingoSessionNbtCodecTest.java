@@ -42,12 +42,16 @@ class BingoSessionNbtCodecTest {
 
     @Test
     void rankedModeSurvivesNbtRoundTrip() {
-        BingoSession session = runningSession(GameMode.RANKED);
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
+        session.startRanked(5, objectives(), 42L, 1200);
+        session.tickRanked();
 
         CompoundTag encoded = BingoSessionNbtCodec.encode(session.snapshot());
         BingoSession restored = BingoSession.restore(BingoSessionNbtCodec.decode(encoded));
 
         assertEquals(GameMode.RANKED, restored.game().orElseThrow().mode());
+        assertEquals(1199L, restored.remainingTicks().orElseThrow());
     }
 
     @Test
@@ -71,12 +75,15 @@ class BingoSessionNbtCodecTest {
     }
 
     private static BingoSession runningSession(GameMode mode) {
-        List<ObjectiveId> objectives = IntStream.range(0, 25)
-                .mapToObj(index -> new ObjectiveId("test:objective_" + index))
-                .toList();
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);
-        session.start(5, objectives, 42L, mode);
+        session.start(5, objectives(), 42L, mode);
         return session;
+    }
+
+    private static List<ObjectiveId> objectives() {
+        return IntStream.range(0, 25)
+                .mapToObj(index -> new ObjectiveId("test:objective_" + index))
+                .toList();
     }
 }

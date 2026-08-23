@@ -71,7 +71,8 @@ class BingoSnapshotTest {
                 running.assignments(),
                 running.game(),
                 running.seed(),
-                Optional.of(RED));
+                Optional.of(RED),
+                Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () -> BingoSession.restore(invalid));
     }

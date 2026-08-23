@@ -34,6 +34,7 @@ public final class BingoSessionNbtCodec {
         snapshot.game().ifPresent(game -> root.put("game", encodeGame(game)));
         snapshot.seed().ifPresent(seed -> root.putLong("seed", seed));
         snapshot.winner().ifPresent(winner -> root.putString("winner", winner.value()));
+        snapshot.remainingTicks().ifPresent(ticks -> root.putLong("remaining_ticks", ticks));
         return root;
     }
 
@@ -53,7 +54,10 @@ public final class BingoSessionNbtCodec {
         Optional<TeamId> winner = root.contains("winner", Tag.TAG_STRING)
                 ? Optional.of(new TeamId(root.getString("winner")))
                 : Optional.empty();
-        return new BingoSessionSnapshot(state, assignments, game, seed, winner);
+        Optional<Long> remainingTicks = root.contains("remaining_ticks", Tag.TAG_LONG)
+                ? Optional.of(root.getLong("remaining_ticks"))
+                : Optional.empty();
+        return new BingoSessionSnapshot(state, assignments, game, seed, winner, remainingTicks);
     }
 
     private static ListTag encodeAssignments(Map<PlayerId, TeamId> assignments) {

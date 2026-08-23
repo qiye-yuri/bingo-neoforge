@@ -3,6 +3,7 @@ package dev.cleanroom.neobingo.client;
 import dev.cleanroom.neobingo.network.BingoCardPayload;
 import dev.cleanroom.neobingo.network.ClientProtocolState;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
+import dev.cleanroom.neobingo.presentation.BingoObjectiveText;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -60,6 +61,7 @@ public final class BingoCardScreen extends Screen {
             String[] row = grid.get(rowIndex);
             for (int column = 0; column < row.length; column++) {
                 String value = row[column];
+                String displayValue = BingoObjectiveText.displayCell(value);
                 int cellLeft = left + column * cellWidth;
                 int cellTop = top + 32 + rowIndex * CELL_HEIGHT;
                 int color = value.startsWith("[✓]") ? CLAIMED : value.contains("???") ? HIDDEN : UNCLAIMED;
@@ -70,11 +72,11 @@ public final class BingoCardScreen extends Screen {
                     graphics.renderOutline(cellLeft + 1, cellTop + 1,
                             cellWidth - 2, CELL_HEIGHT - 2, FOCUSED);
                 }
-                String visible = font.plainSubstrByWidth(value, Math.max(1, cellWidth - 8));
+                String visible = font.plainSubstrByWidth(displayValue, Math.max(1, cellWidth - 8));
                 graphics.drawString(font, visible, cellLeft + 4, cellTop + 10, TEXT, false);
                 if (mouseX >= cellLeft && mouseX < cellLeft + cellWidth
                         && mouseY >= cellTop && mouseY < cellTop + CELL_HEIGHT) {
-                    hovered = value;
+                    hovered = displayValue;
                 }
             }
             cellIndexBase += row.length;

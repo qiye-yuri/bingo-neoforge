@@ -53,6 +53,7 @@
 - [x] Allow players to focus a card cell and keep its objective visible in the HUD.
 - [x] Refresh an open full-card screen from live snapshots and show localized interaction hints.
 - [x] Use shared localized mode names across the HUD, full-card screen, and command feedback.
+- [x] Render item objective identifiers as localized item names on enhanced clients.
 - Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.

@@ -1,6 +1,7 @@
 ### Gradle ###
 .gradle
 build/
+dist/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/**/build/
 

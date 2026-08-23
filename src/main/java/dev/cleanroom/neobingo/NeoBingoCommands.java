@@ -186,6 +186,12 @@ public final class NeoBingoCommands {
                 "commands.neo_bingo.status.game",
                 modeName(game.mode()),
                 session.seed().orElseThrow()), false));
+        session.game().ifPresent(game -> game.standings(session.roster().assignments().values()).forEach(standing ->
+                source.sendSuccess(() -> Component.translatable(
+                        "commands.neo_bingo.status.standing",
+                        standing.rank(),
+                        standing.team().value(),
+                        standing.score()), false)));
         session.winner().ifPresent(winner -> source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.status.winner", winner.value()), false));
     }

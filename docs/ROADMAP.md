@@ -33,6 +33,8 @@
 - [x] Standard and lockout claim behavior extracted into independent rule strategies.
 - [x] Isolated visibility strategy and optional hidden mode.
 - [x] Inventory objective completion extracted into an independent strategy.
+- [x] Independent score-ranking strategy with deterministic tie handling.
+- Complete ranked mode with a persistent time limit.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
 - [x] Bingo-card definition generator with strict round-trip validation and a Gradle entry point.

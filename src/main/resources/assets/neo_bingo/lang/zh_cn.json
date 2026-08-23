@@ -18,6 +18,7 @@
   "commands.neo_bingo.state.running": "进行中",
   "commands.neo_bingo.status.game": "模式：%s，种子：%s",
   "commands.neo_bingo.status.summary": "宾果状态：%s，玩家：%s，队伍：%s",
+  "commands.neo_bingo.status.standing": "第 %s 名：%s（%s 分）",
   "commands.neo_bingo.status.winner": "胜者：%s",
   "commands.neo_bingo.win": "队伍 %s 完成连线并获胜",
   "mod.neo_bingo.name": "Neo Bingo"

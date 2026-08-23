@@ -1,11 +1,15 @@
 package dev.cleanroom.neobingo.domain;
 
+import dev.cleanroom.neobingo.domain.rule.ScoreRankingRule;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** 由服务器权威管理格子认领和连线胜利判定的领域聚合。 */
 public final class BingoGame {
@@ -39,6 +43,14 @@ public final class BingoGame {
     public int score(TeamId team) {
         Objects.requireNonNull(team, "team");
         return (int) claims.values().stream().filter(teams -> teams.contains(team)).count();
+    }
+
+    public List<TeamStanding> standings(Collection<TeamId> teams) {
+        Objects.requireNonNull(teams, "teams");
+        Map<TeamId, Integer> scores = teams.stream()
+                .distinct()
+                .collect(Collectors.toMap(team -> team, this::score));
+        return ScoreRankingRule.INSTANCE.rank(scores);
     }
 
     public BingoCard card() {

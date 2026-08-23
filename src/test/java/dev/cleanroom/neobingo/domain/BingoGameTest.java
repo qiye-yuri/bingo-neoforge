@@ -30,6 +30,17 @@ class BingoGameTest {
     }
 
     @Test
+    void standingsIncludeUnscoredTeamsAndClaimScores() {
+        BingoGame game = new BingoGame(card(), GameMode.STANDARD);
+        game.claim(RED, 0);
+
+        assertEquals(List.of(
+                new TeamStanding(1, RED, 1),
+                new TeamStanding(2, BLUE, 0)),
+                game.standings(List.of(BLUE, RED)));
+    }
+
+    @Test
     void lockoutModeRejectsASecondTeam() {
         BingoGame game = new BingoGame(card(), GameMode.LOCKOUT);
 

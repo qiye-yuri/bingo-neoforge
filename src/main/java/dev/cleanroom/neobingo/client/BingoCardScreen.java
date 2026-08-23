@@ -14,12 +14,12 @@ public final class BingoCardScreen extends Screen {
     private static final int PANEL_WIDTH = 700;
     private static final int CELL_HEIGHT = 28;
     private static final int FOOTER_HEIGHT = 18;
-    private static final int BACKGROUND = 0xE0182029;
+    private static final int BACKGROUND = 0xFF182029;
     private static final int BORDER = 0xFFF2C94C;
     private static final int TEXT = 0xFFF2F2F2;
-    private static final int CLAIMED = 0xD0286B45;
-    private static final int UNCLAIMED = 0xD0242D38;
-    private static final int HIDDEN = 0xD0161B22;
+    private static final int CLAIMED = 0xFF286B45;
+    private static final int UNCLAIMED = 0xFF242D38;
+    private static final int HIDDEN = 0xFF161B22;
     private static final int FOCUSED = 0xFFFFFFFF;
     private final BingoCardPayload initialCard;
     private BingoCardPayload displayedCard;
@@ -36,7 +36,6 @@ public final class BingoCardScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         displayedCard = ClientProtocolState.latestCard().orElse(initialCard);
         int width = Math.min(PANEL_WIDTH, this.width - 24);
         java.util.List<String[]> grid = displayedCard.rows().stream()

@@ -26,7 +26,7 @@ channel. Servers do not require this channel, so vanilla clients remain supporte
 2. Copy `build/libs/neo_bingo-<version>.jar` into the server's `mods` directory.
 3. Clients may play without the mod through chat. For the HUD, full card, and item icons, copy the same JAR into the client's `mods` directory.
 4. Start the server and have players run `/neobingo join <team>`.
-5. An operator can run `/neobingo start` for standard mode or select another mode with the commands below.
+5. A player who joined a team, or an operator, can run `/neobingo start` for standard mode or select another mode below.
 
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
 
@@ -62,9 +62,9 @@ Run loader-aware integration tests with:
 
 - `/neobingo join <team>` joins or changes team while the lobby is open.
 - `/neobingo leave` leaves the current team while the lobby is open.
-- `/neobingo start [seed]` starts a standard 5x5 game (operator only).
-- `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode (operator only).
-- `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game (operator only).
+- `/neobingo start [seed]` starts a standard 5x5 game for a joined player or operator.
+- `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode.
+- `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game.
 - `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.

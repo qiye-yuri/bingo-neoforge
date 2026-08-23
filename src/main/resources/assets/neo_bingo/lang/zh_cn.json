@@ -9,6 +9,7 @@
   "commands.neo_bingo.error.not_joined": "你尚未加入队伍",
   "commands.neo_bingo.error.not_started": "Bingo 游戏尚未开始",
   "commands.neo_bingo.error.player_only": "命令只能由游戏内玩家执行",
+  "commands.neo_bingo.error.start_permission": "请先加入一个队伍，或由服务器管理员执行开局",
   "commands.neo_bingo.error.unexpected": "命令执行失败，请查看服务器日志",
   "commands.neo_bingo.join.success": "已加入队伍 %s",
   "commands.neo_bingo.leave.success": "已离开当前队伍",

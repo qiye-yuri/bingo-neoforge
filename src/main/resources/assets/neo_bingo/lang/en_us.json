@@ -9,6 +9,7 @@
   "commands.neo_bingo.error.not_joined": "You have not joined a team",
   "commands.neo_bingo.error.not_started": "The bingo game has not started",
   "commands.neo_bingo.error.player_only": "This command can only be used by an in-game player",
+  "commands.neo_bingo.error.start_permission": "Join a team first, or ask a server administrator to start the game",
   "commands.neo_bingo.error.unexpected": "The command failed; see the server log for details",
   "commands.neo_bingo.join.success": "Joined team %s",
   "commands.neo_bingo.leave.success": "Left the current team",

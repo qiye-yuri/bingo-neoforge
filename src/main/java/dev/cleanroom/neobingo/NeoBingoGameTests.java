@@ -165,8 +165,7 @@ public final class NeoBingoGameTests {
         PlayerId playerId = new PlayerId(player.getUUID());
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
-        server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack(), "neobingo start standard difficulty s 42");
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo start 42");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
 
         BingoSession running = data.restoreSession().orElseThrow();
@@ -174,6 +173,12 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(running.roster().teamOf(playerId).orElseThrow(), RED, "加入命令应保存玩家队伍");
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
         helper.assertValueEqual(running.seed().orElseThrow(), 42L, "开局命令应使用指定种子");
+
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo reroll difficulty s 43");
+        BingoSession rerolled = data.restoreSession().orElseThrow();
+        helper.assertValueEqual(rerolled.state(), SessionState.RUNNING, "重新生成后会话应继续运行");
+        helper.assertValueEqual(rerolled.seed().orElseThrow(), 43L, "难度重新生成命令应使用指定种子");
 
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo end");
         helper.assertValueEqual(

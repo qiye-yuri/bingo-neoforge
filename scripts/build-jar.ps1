@@ -4,8 +4,26 @@ $repositoryPath = (Get-Location).Path
 Set-Location -LiteralPath $repositoryPath
 
 try {
-    $javaVersion = (& cmd.exe /d /c "java -version 2>&1" | Out-String)
-    if ($LASTEXITCODE -ne 0 -or $javaVersion -notmatch 'version "21(?:\.|\")') {
+    $javaCommand = "java"
+    $jarCommand = "jar"
+    if ($env:JAVA_HOME) {
+        $javaHomeCommand = Join-Path $env:JAVA_HOME "bin\java.exe"
+        $jarHomeCommand = Join-Path $env:JAVA_HOME "bin\jar.exe"
+        if ((Test-Path -LiteralPath $javaHomeCommand) -and (Test-Path -LiteralPath $jarHomeCommand)) {
+            $javaCommand = $javaHomeCommand
+            $jarCommand = $jarHomeCommand
+        }
+    }
+    if (-not $env:GRADLE_USER_HOME -and $env:USERPROFILE) {
+        $env:GRADLE_USER_HOME = Join-Path $env:USERPROFILE ".gradle"
+    }
+
+    $savedErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $javaVersion = (& $javaCommand -version 2>&1 | Out-String)
+    $javaExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $savedErrorActionPreference
+    if ($javaExitCode -ne 0 -or $javaVersion -notmatch 'version "21(?:\.|\")') {
         throw "Java 21 was not found. Install Java 21 and add java to PATH."
     }
 
@@ -30,7 +48,7 @@ try {
         throw "No installable mod JAR was found in build/libs."
     }
 
-    $entries = & jar tf $jar.FullName
+    $entries = & $jarCommand tf $jar.FullName
     if ($LASTEXITCODE -ne 0 -or $entries -notcontains "META-INF/neoforge.mods.toml") {
         throw "The generated JAR does not contain NeoForge mod metadata."
     }

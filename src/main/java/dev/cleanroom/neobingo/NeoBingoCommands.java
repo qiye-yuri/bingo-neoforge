@@ -44,7 +44,7 @@ public final class NeoBingoCommands {
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> leave(context.getSource()))))
                 .then(Commands.literal("start")
-                        .requires(NeoBingoPermissions::canAdmin)
+                        .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
                                 context.getSource(),
                                 context.getSource().getLevel().getRandom().nextLong(),
@@ -200,6 +200,7 @@ public final class NeoBingoCommands {
     private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
+        requireStartPermission(source, session);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.start(definition.size(), BingoCardDefinitions.objectives(difficulty, seed), seed, mode);
         data.store(session);
@@ -221,6 +222,7 @@ public final class NeoBingoCommands {
     private static void startRanked(CommandSourceStack source, int seconds, long seed, DifficultyTier difficulty) {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
+        requireStartPermission(source, session);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.startRanked(
                 definition.size(),
@@ -231,6 +233,18 @@ public final class NeoBingoCommands {
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
                 "commands.neo_bingo.start.ranked.success", seconds, seed));
+    }
+
+    private static void requireStartPermission(CommandSourceStack source, BingoSession session) {
+        if (NeoBingoPermissions.canAdmin(source)) {
+            return;
+        }
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            throw failure("commands.neo_bingo.error.start_permission");
+        }
+        if (session.roster().teamOf(new PlayerId(player.getUUID())).isEmpty()) {
+            throw failure("commands.neo_bingo.error.start_permission");
+        }
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {

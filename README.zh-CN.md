@@ -23,7 +23,7 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 2. 将构建生成的 `build/libs/neo_bingo-<版本>.jar` 放入服务端的 `mods` 文件夹。
 3. 客户端可以不安装模组并通过聊天栏游玩；若需要 HUD、完整卡片和物品图标，则将同一个 JAR 放入客户端 `mods` 文件夹。
 4. 启动服务端后，玩家使用 `/neobingo join <team>` 加入队伍。
-5. 管理员使用 `/neobingo start` 开始标准模式，或使用下方命令选择其他模式。
+5. 已加入队伍的玩家或管理员使用 `/neobingo start` 开始标准模式，也可使用下方命令选择其他模式。
 
 服务端成功加载时，日志会显示 `Neo Bingo initialized` 和已加载的 5×5 Bingo 卡定义。
 
@@ -64,9 +64,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
 
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
 - `/neobingo leave`：在大厅开放期间离开当前队伍。
-- `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，仅管理员可用。
-- `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏，仅管理员可用。
-- `/neobingo start ranked <秒数> [种子]`：开始按得分排名的限时游戏，仅管理员可用。
+- `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，已加入队伍的玩家或管理员可用。
+- `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏。
+- `/neobingo start ranked <秒数> [种子]`：开始按得分排名的限时游戏。
 - `/neobingo reroll [seed]`：保留队伍和模式并重新生成正在运行的卡片，仅管理员可用。
 - `/neobingo card`：在原版聊天栏中显示所在队伍的 Bingo 卡。
 - `/neobingo claim`：立即检查玩家的服务端物品栏，并认领其中匹配的目标。

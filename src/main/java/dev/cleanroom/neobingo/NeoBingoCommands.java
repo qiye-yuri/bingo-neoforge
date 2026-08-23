@@ -1,6 +1,7 @@
 package dev.cleanroom.neobingo;
 
 import com.mojang.brigadier.arguments.LongArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -50,7 +51,8 @@ public final class NeoBingoCommands {
                                         GameMode.STANDARD))))
                         .then(modeStartCommand("standard", GameMode.STANDARD))
                         .then(modeStartCommand("lockout", GameMode.LOCKOUT))
-                        .then(modeStartCommand("hidden", GameMode.HIDDEN)))
+                        .then(modeStartCommand("hidden", GameMode.HIDDEN))
+                        .then(rankedStartCommand()))
                 .then(Commands.literal("reroll")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> run(context.getSource(), () -> reroll(
@@ -98,6 +100,20 @@ public final class NeoBingoCommands {
                                 mode))));
     }
 
+    private static LiteralArgumentBuilder<CommandSourceStack> rankedStartCommand() {
+        return Commands.literal("ranked")
+                .then(Commands.argument("seconds", IntegerArgumentType.integer(1, 86400))
+                        .executes(context -> run(context.getSource(), () -> startRanked(
+                                context.getSource(),
+                                IntegerArgumentType.getInteger(context, "seconds"),
+                                context.getSource().getLevel().getRandom().nextLong())))
+                        .then(Commands.argument("seed", LongArgumentType.longArg())
+                                .executes(context -> run(context.getSource(), () -> startRanked(
+                                        context.getSource(),
+                                        IntegerArgumentType.getInteger(context, "seconds"),
+                                        LongArgumentType.getLong(context, "seed"))))));
+    }
+
     private static void leave(CommandSourceStack source) throws Exception {
         ServerPlayer player = source.getPlayerOrException();
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
@@ -128,6 +144,16 @@ public final class NeoBingoCommands {
         session.reroll(definition.size(), definition.objectives(), seed);
         data.store(session);
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.reroll.success", seed), true);
+    }
+
+    private static void startRanked(CommandSourceStack source, int seconds, long seed) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.startRanked(definition.size(), definition.objectives(), seed, Math.multiplyExact(seconds, 20L));
+        data.store(session);
+        source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.start.ranked.success", seconds, seed), true);
     }
 
     private static void showCard(CommandSourceStack source) throws Exception {
@@ -194,6 +220,8 @@ public final class NeoBingoCommands {
                         standing.score()), false)));
         session.winner().ifPresent(winner -> source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.status.winner", winner.value()), false));
+        session.remainingTicks().ifPresent(ticks -> source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.status.remaining", (ticks + 19) / 20), false));
     }
 
     private static Component modeName(GameMode mode) {

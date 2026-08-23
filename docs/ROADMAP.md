@@ -37,7 +37,7 @@
 - [x] Line victory and no-automatic-victory behavior extracted into independent strategies.
 - [x] Compose ranked-mode domain rules without premature line completion.
 - [x] Persistent ranked countdown and unique score-leader resolution in domain snapshots and NBT.
-- Complete ranked mode with a persistent time limit.
+- [x] Complete ranked mode with a persistent time limit, server ticking, and command entry point.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
 - [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
 - [x] Bingo-card definition generator with strict round-trip validation and a Gradle entry point.

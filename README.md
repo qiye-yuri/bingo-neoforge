@@ -37,6 +37,7 @@ Run loader-aware integration tests with:
 - `/neobingo leave` leaves the current team while the lobby is open.
 - `/neobingo start [seed]` starts a standard 5x5 game (operator only).
 - `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode (operator only).
+- `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game (operator only).
 - `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
 - `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.

@@ -155,6 +155,34 @@ public final class NeoBingoGameTests {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty", batch = "commandLifecycle")
+    @SuppressWarnings("removal")
+    public static void brigadierCommandsCompleteBasicLifecycle(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        NeoBingoSavedData data = NeoBingoSavedData.get(server);
+        data.clear();
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        PlayerId playerId = new PlayerId(player.getUUID());
+
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo start standard 42");
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
+
+        BingoSession running = data.restoreSession().orElseThrow();
+        helper.assertValueEqual(running.state(), SessionState.RUNNING, "命令开局后会话应处于运行状态");
+        helper.assertValueEqual(running.roster().teamOf(playerId).orElseThrow(), RED, "加入命令应保存玩家队伍");
+        helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
+        helper.assertValueEqual(running.seed().orElseThrow(), 42L, "开局命令应使用指定种子");
+
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo end");
+        helper.assertValueEqual(
+                data.restoreSession().orElseThrow().state(),
+                SessionState.FINISHED,
+                "结束命令应持久化已结束状态");
+        data.clear();
+        helper.succeed();
+    }
+
     private static BingoSession runningSession() {
         BingoSession session = new BingoSession();
         session.join(PLAYER, RED);

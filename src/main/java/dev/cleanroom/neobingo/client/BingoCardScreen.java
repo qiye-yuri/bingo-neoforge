@@ -72,8 +72,15 @@ public final class BingoCardScreen extends Screen {
                     graphics.renderOutline(cellLeft + 1, cellTop + 1,
                             cellWidth - 2, CELL_HEIGHT - 2, FOCUSED);
                 }
-                String visible = font.plainSubstrByWidth(displayValue, Math.max(1, cellWidth - 8));
-                graphics.drawString(font, visible, cellLeft + 4, cellTop + 10, TEXT, false);
+                var item = BingoObjectiveText.itemForCell(value);
+                boolean drawIcon = item.isPresent() && cellWidth >= 40;
+                int textOffset = drawIcon ? 24 : 4;
+                if (drawIcon) {
+                    graphics.renderItem(item.orElseThrow().getDefaultInstance(), cellLeft + 4, cellTop + 6);
+                }
+                String visible = font.plainSubstrByWidth(
+                        displayValue, Math.max(1, cellWidth - textOffset - 4));
+                graphics.drawString(font, visible, cellLeft + textOffset, cellTop + 10, TEXT, false);
                 if (mouseX >= cellLeft && mouseX < cellLeft + cellWidth
                         && mouseY >= cellTop && mouseY < cellTop + CELL_HEIGHT) {
                     hovered = displayValue;

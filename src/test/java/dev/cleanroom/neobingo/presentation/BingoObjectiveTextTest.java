@@ -25,4 +25,11 @@ class BingoObjectiveTextTest {
         assertEquals("[ ] ???", BingoObjectiveText.displayCell("[ ] ???"));
         assertEquals("[ ] future:unknown", BingoObjectiveText.displayCell("[ ] future:unknown"));
     }
+
+    @Test
+    void resolvesOnlyKnownVisibleItemObjectivesForIcons() {
+        assertEquals(Items.STONE, BingoObjectiveText.itemForCell("[ ] minecraft:stone").orElseThrow());
+        assertEquals(java.util.Optional.empty(), BingoObjectiveText.itemForCell("[ ] ???"));
+        assertEquals(java.util.Optional.empty(), BingoObjectiveText.itemForCell("[ ] future:unknown"));
+    }
 }

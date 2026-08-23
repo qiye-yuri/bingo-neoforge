@@ -37,7 +37,7 @@ public final class BingoSession {
         TeamId team = roster.teamOf(player)
                 .orElseThrow(() -> new IllegalArgumentException("Player has not joined a team"));
         ClaimOutcome outcome = game.claim(team, tileIndex);
-        if (outcome == ClaimOutcome.CLAIMED && game.hasWinningLine(team)) {
+        if (outcome == ClaimOutcome.CLAIMED && game.mode().victoryRule().hasWon(game, team)) {
             winner = team;
             state = SessionState.FINISHED;
         }
@@ -95,8 +95,9 @@ public final class BingoSession {
         restored.seed = snapshot.seed().orElse(0L);
         restored.winner = snapshot.winner().orElse(null);
 
-        if (restored.winner != null && !restored.game.hasWinningLine(restored.winner)) {
-            throw new IllegalArgumentException("Winner does not have a completed line");
+        if (restored.winner != null
+                && !restored.game.mode().victoryRule().hasWon(restored.game, restored.winner)) {
+            throw new IllegalArgumentException("Winner does not satisfy the selected victory rule");
         }
         return restored;
     }

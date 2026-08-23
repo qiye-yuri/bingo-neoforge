@@ -34,7 +34,8 @@
 - [x] Isolated visibility strategy and optional hidden mode.
 - [x] Inventory objective completion extracted into an independent strategy.
 - Lockout, inventory, hidden, and ranked rules as isolated strategy modules.
-- Versioned JSON schema, validation, data generation, and migration tests.
+- [x] Versioned JSON Schema, strict validation, and version 0 to version 1 migration tests.
+- Bingo-card definition data generator.
 
 ## Phase 3 — client experience
 

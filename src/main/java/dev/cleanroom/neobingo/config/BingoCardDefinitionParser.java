@@ -22,7 +22,7 @@ public final class BingoCardDefinitionParser {
         if (!root.isJsonObject()) {
             throw new IllegalArgumentException("宾果卡定义根节点必须是对象");
         }
-        JsonObject object = root.getAsJsonObject();
+        JsonObject object = BingoCardDefinitionMigrator.migrate(root.getAsJsonObject());
         if (!ALLOWED_FIELDS.containsAll(object.keySet())) {
             throw new IllegalArgumentException("宾果卡定义包含未知字段");
         }

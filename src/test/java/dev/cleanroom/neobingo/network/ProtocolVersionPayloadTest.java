@@ -24,4 +24,15 @@ class ProtocolVersionPayloadTest {
 
         assertEquals(1, ClientProtocolState.negotiatedVersion());
     }
+
+    @Test
+    void clearingConnectionStateRemovesNegotiationAndCard() {
+        ClientProtocolState.accept(new ProtocolVersionPayload(1));
+        ClientProtocolState.accept(new BingoCardPayload("red", "STANDARD", java.util.List.of("row")));
+
+        ClientProtocolState.clear();
+
+        assertEquals(0, ClientProtocolState.negotiatedVersion());
+        assertEquals(java.util.Optional.empty(), ClientProtocolState.latestCard());
+    }
 }

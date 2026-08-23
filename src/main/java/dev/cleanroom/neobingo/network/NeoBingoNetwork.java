@@ -7,6 +7,8 @@ import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
+import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.domain.SessionState;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -44,6 +46,10 @@ public final class NeoBingoNetwork {
         PacketDistributor.sendToPlayer(
                 player,
                 new ProtocolVersionPayload(ProtocolVersionPayload.CURRENT_VERSION));
+        NeoBingoSavedData.get(player.getServer()).restoreSession()
+                .filter(session -> session.state() != SessionState.LOBBY)
+                .ifPresent(session -> session.roster().teamOf(new PlayerId(player.getUUID()))
+                        .ifPresent(team -> syncTeamCard(session, team, java.util.List.of(player))));
     }
 
     public static void sendCardIfSupported(ServerPlayer player, BingoGame game, TeamId team) {

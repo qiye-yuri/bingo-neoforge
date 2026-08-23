@@ -51,6 +51,7 @@
 - [x] Send the application version only to enhanced clients that negotiated the channel.
 - [x] Synchronize structured card snapshots to enhanced clients while retaining chat cards.
 - [x] Refresh enhanced-client HUD state after starts, rerolls, and claims.
+- [x] Restore HUD state after reconnect and clear cached state on disconnect.
 - [x] Explicit optional protocol negotiation so vanilla clients remain supported.
 
 ## Phase 4 — integrations and hardening

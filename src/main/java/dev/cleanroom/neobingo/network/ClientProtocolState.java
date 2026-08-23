@@ -25,4 +25,9 @@ public final class ClientProtocolState {
     static void accept(BingoCardPayload payload) {
         latestCard = payload;
     }
+
+    public static void clear() {
+        negotiatedVersion = 0;
+        latestCard = null;
+    }
 }

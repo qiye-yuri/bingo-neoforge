@@ -20,6 +20,9 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Verify Gradle wrapper permissions
+        run: test -x gradlew
+
       - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:

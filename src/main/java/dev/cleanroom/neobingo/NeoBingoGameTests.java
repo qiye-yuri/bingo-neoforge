@@ -164,6 +164,13 @@ public final class NeoBingoGameTests {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         PlayerId playerId = new PlayerId(player.getUUID());
 
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo book");
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo book");
+        long settingsBookCount = player.getInventory().items.stream()
+                .filter(stack -> stack.is(Items.WRITTEN_BOOK))
+                .count();
+        helper.assertValueEqual(settingsBookCount, 1L, "重复领取不应产生多本设置书");
+
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo start 42");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");

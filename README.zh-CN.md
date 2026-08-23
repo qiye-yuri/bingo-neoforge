@@ -25,6 +25,8 @@ Neo Bingo 是一个全新且独立实现的 NeoForge 模组，依据公开的行
 4. 启动服务端后，玩家使用 `/neobingo join <team>` 加入队伍。
 5. 已加入队伍的玩家或管理员使用 `/neobingo start` 开始标准模式，也可使用下方命令选择其他模式。
 
+玩家登录时会获得一本原版可交互的 `Bingo 设置书`，可在书中点击选择队伍、游戏模式和 MAX 至 D 难度。背包中已有设置书时不会重复发放，丢失后可重新登录或使用 `/neobingo book` 补领。
+
 服务端成功加载时，日志会显示 `Neo Bingo initialized` 和已加载的 5×5 Bingo 卡定义。
 
 ## 构建
@@ -64,6 +66,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
 
 - `/neobingo join <team>`：在大厅开放期间加入或更换队伍。
 - `/neobingo leave`：在大厅开放期间离开当前队伍。
+- `/neobingo book`：补领一本可点击选择队伍、模式和难度的 Bingo 设置书。
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，已加入队伍的玩家或管理员可用。
 - `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏。
 - `/neobingo start ranked <秒数> [种子]`：开始按得分排名的限时游戏。

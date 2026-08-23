@@ -28,6 +28,8 @@ channel. Servers do not require this channel, so vanilla clients remain supporte
 4. Start the server and have players run `/neobingo join <team>`.
 5. A player who joined a team, or an operator, can run `/neobingo start` for standard mode or select another mode below.
 
+On login, each player receives a vanilla interactive Bingo settings book for choosing a team, game mode, and MAX-to-D difficulty. It is not duplicated while one remains in the inventory; reconnect or run `/neobingo book` to replace a lost copy.
+
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
 
 ## Build
@@ -62,6 +64,7 @@ Run loader-aware integration tests with:
 
 - `/neobingo join <team>` joins or changes team while the lobby is open.
 - `/neobingo leave` leaves the current team while the lobby is open.
+- `/neobingo book` gives a replacement interactive Bingo settings book.
 - `/neobingo start [seed]` starts a standard 5x5 game for a joined player or operator.
 - `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode.
 - `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game.

@@ -43,6 +43,9 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("leave")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> leave(context.getSource()))))
+                .then(Commands.literal("book")
+                        .requires(NeoBingoPermissions::canPlay)
+                        .executes(context -> run(context.getSource(), () -> giveBook(context.getSource()))))
                 .then(Commands.literal("start")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
@@ -195,6 +198,14 @@ public final class NeoBingoCommands {
         session.leave(playerId);
         data.store(session);
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.leave.success"), false);
+    }
+
+    private static void giveBook(CommandSourceStack source) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        boolean given = BingoSettingsBook.giveIfMissing(player);
+        source.sendSuccess(() -> Component.translatable(given
+                ? "commands.neo_bingo.book.success"
+                : "commands.neo_bingo.book.already_has"), false);
     }
 
     private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {

@@ -25,7 +25,9 @@ class LanguageResourcesTest {
                         || key.startsWith("key.neo_bingo.")
                         || key.startsWith("key.categories.neo_bingo")
                         || key.startsWith("hud.neo_bingo.")
-                        || key.startsWith("screen.neo_bingo.")));
+                        || key.startsWith("screen.neo_bingo.")
+                        || key.startsWith("item.neo_bingo.")
+                        || key.startsWith("book.neo_bingo.")));
         english.keySet().forEach(key -> assertEquals(
                 placeholderCount(english.get(key).getAsString()),
                 placeholderCount(chinese.get(key).getAsString()),

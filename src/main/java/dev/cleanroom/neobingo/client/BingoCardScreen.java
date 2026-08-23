@@ -7,6 +7,7 @@ import dev.cleanroom.neobingo.presentation.BingoObjectiveText;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 /** 以居中面板展示服务端同步的 Bingo 卡快照。 */
 public final class BingoCardScreen extends Screen {
@@ -88,8 +89,9 @@ public final class BingoCardScreen extends Screen {
             }
             cellIndexBase += row.length;
         }
-        graphics.drawCenteredString(font, Component.translatable("screen.neo_bingo.card.hint"),
-                this.width / 2, top + height - 13, TEXT);
+        String hint = font.plainSubstrByWidth(
+                Component.translatable("screen.neo_bingo.card.hint").getString(), Math.max(1, width - 8));
+        graphics.drawCenteredString(font, hint, this.width / 2, top + height - 13, TEXT);
         super.render(graphics, mouseX, mouseY, partialTick);
         if (hovered != null) {
             graphics.renderTooltip(font, Component.literal(hovered), mouseX, mouseY);
@@ -111,6 +113,37 @@ public final class BingoCardScreen extends Screen {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return switch (keyCode) {
+            case GLFW.GLFW_KEY_LEFT -> moveFocus(0, -1);
+            case GLFW.GLFW_KEY_RIGHT -> moveFocus(0, 1);
+            case GLFW.GLFW_KEY_UP -> moveFocus(-1, 0);
+            case GLFW.GLFW_KEY_DOWN -> moveFocus(1, 0);
+            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER, GLFW.GLFW_KEY_SPACE -> toggleKeyboardFocus();
+            default -> super.keyPressed(keyCode, scanCode, modifiers);
+        };
+    }
+
+    private boolean moveFocus(int rowOffset, int columnOffset) {
+        int rowCount = displayedCard.rows().size();
+        int current = ClientProtocolState.focusedCell();
+        if (current < 0) {
+            ClientProtocolState.focusCell(0);
+            return true;
+        }
+        int row = Math.clamp(current / columns + rowOffset, 0, rowCount - 1);
+        int column = Math.clamp(current % columns + columnOffset, 0, columns - 1);
+        ClientProtocolState.focusCell(row * columns + column);
+        return true;
+    }
+
+    private boolean toggleKeyboardFocus() {
+        int current = ClientProtocolState.focusedCell();
+        ClientProtocolState.toggleFocusedCell(current < 0 ? 0 : current);
+        return true;
     }
 
     @Override

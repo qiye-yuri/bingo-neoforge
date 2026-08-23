@@ -66,6 +66,10 @@ class ProtocolVersionPayloadTest {
 
         ClientProtocolState.toggleFocusedCell(1);
         assertEquals(java.util.Optional.empty(), ClientProtocolState.focusedObjective());
+
+        ClientProtocolState.focusCell(3);
+        assertEquals("gravel", ClientProtocolState.focusedObjective().orElseThrow());
+        assertThrows(IllegalArgumentException.class, () -> ClientProtocolState.focusCell(4));
     }
 
     @Test

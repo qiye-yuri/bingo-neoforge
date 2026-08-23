@@ -51,10 +51,13 @@ public final class ClientProtocolState {
     }
 
     public static void toggleFocusedCell(int cellIndex) {
-        if (latestCard == null || cellIndex < 0 || cellIndex >= cellCount(latestCard)) {
-            throw new IllegalArgumentException("格子索引超出当前卡片范围");
-        }
+        validateCellIndex(cellIndex);
         focusedCell = focusedCell == cellIndex ? -1 : cellIndex;
+    }
+
+    public static void focusCell(int cellIndex) {
+        validateCellIndex(cellIndex);
+        focusedCell = cellIndex;
     }
 
     public static Optional<String> focusedObjective() {
@@ -76,5 +79,11 @@ public final class ClientProtocolState {
         return payload.rows().stream()
                 .mapToInt(row -> row.split(" \\| ", -1).length)
                 .sum();
+    }
+
+    private static void validateCellIndex(int cellIndex) {
+        if (latestCard == null || cellIndex < 0 || cellIndex >= cellCount(latestCard)) {
+            throw new IllegalArgumentException("格子索引超出当前卡片范围");
+        }
     }
 }

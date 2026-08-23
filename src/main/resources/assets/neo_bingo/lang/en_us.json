@@ -37,6 +37,6 @@
   "key.neo_bingo.toggle_hud": "Toggle bingo HUD",
   "hud.neo_bingo.focused": "Focused: %s",
   "screen.neo_bingo.card": "Bingo Card",
-  "screen.neo_bingo.card.hint": "Left-click a cell to focus its objective · Esc to close",
+  "screen.neo_bingo.card.hint": "Click or use arrows to select · Enter/Space to toggle focus · Esc to close",
   "screen.neo_bingo.card.title": "Team %s · %s"
 }

@@ -55,6 +55,7 @@
 - [x] Use shared localized mode names across the HUD, full-card screen, and command feedback.
 - [x] Render item objective identifiers as localized item names on enhanced clients.
 - [x] Render target icons through the standard item API with a text-only narrow-screen fallback.
+- [x] Support arrow-key navigation and Enter or Space to toggle the focused cell.
 - Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.

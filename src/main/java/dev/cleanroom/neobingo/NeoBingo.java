@@ -2,10 +2,12 @@ package dev.cleanroom.neobingo;
 
 import com.mojang.logging.LogUtils;
 import dev.cleanroom.neobingo.config.BingoCardDefinitions;
+import dev.cleanroom.neobingo.client.BingoClientConfig;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 
@@ -15,6 +17,7 @@ public final class NeoBingo {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public NeoBingo(IEventBus modBus, ModContainer container) {
+        container.registerConfig(ModConfig.Type.CLIENT, BingoClientConfig.SPEC);
         modBus.addListener(NeoBingoGameTests::register);
         modBus.addListener(NeoBingoNetwork::register);
         NeoForge.EVENT_BUS.addListener(BingoCardDefinitions::registerReloadListener);

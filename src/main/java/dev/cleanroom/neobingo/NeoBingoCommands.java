@@ -121,7 +121,7 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         PlayerId playerId = new PlayerId(player.getUUID());
         if (session.roster().teamOf(playerId).isEmpty()) {
-            throw new IllegalStateException("你尚未加入队伍");
+            throw failure("commands.neo_bingo.error.not_joined");
         }
         session.leave(playerId);
         data.store(session);
@@ -163,9 +163,9 @@ public final class NeoBingoCommands {
     private static void showCard(CommandSourceStack source) throws Exception {
         ServerPlayer player = source.getPlayerOrException();
         BingoSession session = requiredSession(NeoBingoSavedData.get(source.getServer()));
-        BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
+        BingoGame game = session.game().orElseThrow(() -> failure("commands.neo_bingo.error.not_started"));
         TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
-                .orElseThrow(() -> new IllegalStateException("你尚未加入队伍"));
+                .orElseThrow(() -> failure("commands.neo_bingo.error.not_joined"));
 
         NeoBingoNetwork.sendCardIfSupported(player, game, team);
 
@@ -187,9 +187,16 @@ public final class NeoBingoCommands {
         ServerPlayer player = source.getPlayerOrException();
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         BingoSession session = requiredSession(data);
+        PlayerId playerId = new PlayerId(player.getUUID());
+        if (session.game().isEmpty()) {
+            throw failure("commands.neo_bingo.error.not_started");
+        }
+        if (session.roster().teamOf(playerId).isEmpty()) {
+            throw failure("commands.neo_bingo.error.not_joined");
+        }
         ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
                 session,
-                new PlayerId(player.getUUID()),
+                playerId,
                 ServerInventoryObjectiveReader.read(player),
                 InventoryPresenceRule.INSTANCE);
         if (result.claimedTiles().isEmpty()) {
@@ -251,15 +258,19 @@ public final class NeoBingoCommands {
     }
 
     private static BingoSession requiredSession(NeoBingoSavedData data) {
-        return data.restoreSession().orElseThrow(() -> new IllegalStateException("尚未创建宾果大厅"));
+        return data.restoreSession().orElseThrow(() -> failure("commands.neo_bingo.error.no_lobby"));
     }
 
     private static int run(CommandSourceStack source, CommandAction action) {
         try {
             action.execute();
             return 1;
+        } catch (CommandFeedbackException exception) {
+            source.sendFailure(exception.feedback());
+            return 0;
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            source.sendFailure(Component.literal(exception.getMessage()));
+            NeoBingo.LOGGER.debug("宾果命令参数或会话状态无效", exception);
+            source.sendFailure(Component.translatable("commands.neo_bingo.error.invalid_request"));
             return 0;
         } catch (CommandSyntaxException exception) {
             source.sendFailure(Component.translatable("commands.neo_bingo.error.player_only"));
@@ -268,6 +279,23 @@ public final class NeoBingoCommands {
             NeoBingo.LOGGER.error("执行宾果命令时发生未预期错误", exception);
             source.sendFailure(Component.translatable("commands.neo_bingo.error.unexpected"));
             return 0;
+        }
+    }
+
+    private static CommandFeedbackException failure(String translationKey) {
+        return new CommandFeedbackException(Component.translatable(translationKey));
+    }
+
+    private static final class CommandFeedbackException extends RuntimeException {
+        private final Component feedback;
+
+        private CommandFeedbackException(Component feedback) {
+            super(null, null, false, false);
+            this.feedback = feedback;
+        }
+
+        private Component feedback() {
+            return feedback;
         }
     }
 

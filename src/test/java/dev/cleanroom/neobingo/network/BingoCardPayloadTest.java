@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test;
 class BingoCardPayloadTest {
     @Test
     void clientStoresLatestStructuredCard() {
-        BingoCardPayload payload = new BingoCardPayload("red", "STANDARD", List.of("row one", "row two"));
+        BingoCardPayload payload = new BingoCardPayload("red", "RANKED", 4, 125, List.of("row one", "row two"));
 
         ClientProtocolState.accept(payload);
 
         assertEquals(payload, ClientProtocolState.latestCard().orElseThrow());
         assertEquals("neo_bingo:bingo_card", BingoCardPayload.TYPE.id().toString());
+        assertEquals(4, payload.score());
+        assertEquals(125, payload.remainingSeconds());
     }
 
     @Test

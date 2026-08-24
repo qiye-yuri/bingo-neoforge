@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.registration.ChannelAttributes;
 
 /** 注册可选且带版本号的客户端增强协议。 */
 public final class NeoBingoNetwork {
-    public static final String PROTOCOL_VERSION = "1";
+    public static final String PROTOCOL_VERSION = "2";
 
     private NeoBingoNetwork() {
     }
@@ -52,22 +52,25 @@ public final class NeoBingoNetwork {
                         .ifPresent(team -> syncTeamCard(session, team, java.util.List.of(player))));
     }
 
-    public static void sendCardIfSupported(ServerPlayer player, BingoGame game, TeamId team) {
+    public static void sendCardIfSupported(ServerPlayer player, BingoSession session, TeamId team) {
         var setup = ChannelAttributes.getPayloadSetup(player.connection.getConnection());
         if (setup == null || setup.getChannel(ConnectionProtocol.PLAY, BingoCardPayload.TYPE.id()) == null) {
             return;
         }
+        BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
         PacketDistributor.sendToPlayer(player, new BingoCardPayload(
                 team.value(),
                 game.mode().name(),
+                game.score(team),
+                session.remainingTicks().map(ticks -> (ticks + 19) / 20).orElse(-1L),
                 BingoCardTextRenderer.render(game, team)));
     }
 
     public static void syncTeamCard(BingoSession session, TeamId team, Iterable<ServerPlayer> players) {
-        BingoGame game = session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
+        session.game().orElseThrow(() -> new IllegalStateException("游戏尚未开始"));
         for (ServerPlayer player : players) {
             if (session.roster().teamOf(new PlayerId(player.getUUID())).filter(team::equals).isPresent()) {
-                sendCardIfSupported(player, game, team);
+                sendCardIfSupported(player, session, team);
             }
         }
     }

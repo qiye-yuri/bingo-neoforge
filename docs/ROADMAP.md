@@ -59,6 +59,7 @@
 - [x] Render item objective identifiers as localized item names on enhanced clients.
 - [x] Render target icons through the standard item API with a text-only narrow-screen fallback.
 - [x] Support arrow-key navigation and Enter or Space to toggle the focused cell.
+- [x] Show server-authoritative team score and ranked remaining time in the HUD and full card.
 - Original graphical assets and richer screen interactions.
 - [x] Register a versioned, optional channel for enhanced clients.
 - [x] Send the application version only to enhanced clients that negotiated the channel.

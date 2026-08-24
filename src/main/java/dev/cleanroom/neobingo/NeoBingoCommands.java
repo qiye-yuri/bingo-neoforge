@@ -280,7 +280,7 @@ public final class NeoBingoCommands {
         TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
                 .orElseThrow(() -> failure("commands.neo_bingo.error.not_joined"));
 
-        NeoBingoNetwork.sendCardIfSupported(player, game, team);
+        NeoBingoNetwork.sendCardIfSupported(player, session, team);
 
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.card.title", team.value()), false);
         for (String line : BingoCardTextRenderer.render(game, team)) {

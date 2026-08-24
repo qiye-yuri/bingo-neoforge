@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW;
 
 /** 以紧凑的图标网格展示服务端同步的 Bingo 卡快照。 */
 public final class BingoCardScreen extends Screen {
-    private static final int HEADER_HEIGHT = 28;
+    private static final int HEADER_HEIGHT = 39;
     private static final int FOOTER_HEIGHT = 20;
     private final BingoCardPayload initialCard;
     private BingoCardPayload displayedCard;
@@ -51,6 +51,11 @@ public final class BingoCardScreen extends Screen {
         graphics.fill(left, top, left + panelWidth, top + panelHeight, BingoCardVisuals.PANEL);
         graphics.drawCenteredString(font, Component.translatable("screen.neo_bingo.card.title",
                 displayedCard.team(), BingoModeText.displayName(displayedCard.mode())), width / 2, top + 9, accent);
+        Component status = displayedCard.remainingSeconds() >= 0
+                ? Component.translatable("hud.neo_bingo.status.timed", displayedCard.score(),
+                        formatTime(displayedCard.remainingSeconds()))
+                : Component.translatable("hud.neo_bingo.status.score", displayedCard.score());
+        graphics.drawCenteredString(font, status, width / 2, top + 20, BingoCardVisuals.MUTED_TEXT);
 
         BingoCardVisuals.Cell hovered = null;
         int index = 0;
@@ -72,6 +77,10 @@ public final class BingoCardScreen extends Screen {
         if (hovered != null) {
             graphics.renderTooltip(font, Component.literal(hovered.label()), mouseX, mouseY);
         }
+    }
+
+    private static String formatTime(long seconds) {
+        return "%02d:%02d".formatted(seconds / 60, seconds % 60);
     }
 
     private void drawCell(GuiGraphics graphics, BingoCardVisuals.Cell cell, int x, int y, int index) {

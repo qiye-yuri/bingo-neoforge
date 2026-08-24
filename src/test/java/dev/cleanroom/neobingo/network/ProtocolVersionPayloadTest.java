@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 class ProtocolVersionPayloadTest {
     @Test
     void exposesStableProtocolIdentity() {
-        assertEquals("1", NeoBingoNetwork.PROTOCOL_VERSION);
-        assertEquals(1, ProtocolVersionPayload.CURRENT_VERSION);
+        assertEquals("2", NeoBingoNetwork.PROTOCOL_VERSION);
+        assertEquals(2, ProtocolVersionPayload.CURRENT_VERSION);
         assertEquals("neo_bingo:protocol_version", ProtocolVersionPayload.TYPE.id().toString());
     }
 

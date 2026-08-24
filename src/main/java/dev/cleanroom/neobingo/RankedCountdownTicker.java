@@ -4,6 +4,7 @@ import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.GameMode;
 import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -27,6 +28,9 @@ public final class RankedCountdownTicker {
         }
         boolean finished = session.tickRanked();
         data.store(session);
+        if (finished || session.remainingTicks().orElseThrow() % 20 == 0) {
+            NeoBingoNetwork.syncAllCards(session, server.getPlayerList().getPlayers());
+        }
         if (!finished) {
             return false;
         }

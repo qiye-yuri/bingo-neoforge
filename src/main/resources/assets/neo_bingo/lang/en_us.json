@@ -70,6 +70,8 @@
   "key.neo_bingo.hud_scale_down": "Decrease Bingo HUD scale",
   "key.neo_bingo.hud_scale_up": "Increase Bingo HUD scale",
   "hud.neo_bingo.focused": "Focused: %s",
+  "hud.neo_bingo.status.score": "Score: %s",
+  "hud.neo_bingo.status.timed": "Score: %s · Remaining: %s",
   "hud.neo_bingo.position.changed": "Bingo HUD position: %s",
   "hud.neo_bingo.position.top_left": "Top left",
   "hud.neo_bingo.position.top_right": "Top right",

@@ -19,7 +19,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 @EventBusSubscriber(modid = NeoBingo.MOD_ID, value = Dist.CLIENT)
 public final class ClientBingoHud {
     private static final int CELL_SIZE = 20;
-    private static final int HEADER_HEIGHT = 18;
+    private static final int HEADER_HEIGHT = 29;
 
     private ClientBingoHud() {
     }
@@ -51,6 +51,8 @@ public final class ClientBingoHud {
             String title = card.team() + " · " + BingoModeText.displayName(card.mode()).getString();
             graphics.drawString(minecraft.font, minecraft.font.plainSubstrByWidth(title, panelWidth - 10),
                     6, 5, accent, false);
+            graphics.drawString(minecraft.font, status(card.score(), card.remainingSeconds()),
+                    6, 16, BingoCardVisuals.MUTED_TEXT, false);
             int index = 0;
             for (int row = 0; row < grid.size(); row++) {
                 for (int column = 0; column < grid.get(row).size(); column++) {
@@ -79,6 +81,16 @@ public final class ClientBingoHud {
             }
             graphics.pose().popPose();
         });
+    }
+
+    private static Component status(int score, long remainingSeconds) {
+        return remainingSeconds >= 0
+                ? Component.translatable("hud.neo_bingo.status.timed", score, formatTime(remainingSeconds))
+                : Component.translatable("hud.neo_bingo.status.score", score);
+    }
+
+    private static String formatTime(long seconds) {
+        return "%02d:%02d".formatted(seconds / 60, seconds % 60);
     }
 
     private static int left(BingoClientConfig.HudCorner corner, int screenWidth, int panelWidth) {

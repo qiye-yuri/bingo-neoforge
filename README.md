@@ -22,6 +22,8 @@ channel. Servers do not require this channel, so vanilla clients remain supporte
 
 The enhanced client shows a compact 5x5 icon card in the top-right corner. Press `B` for a full team-colored card with completion, hidden-tile, item-icon, and hover states; press `H` to toggle the HUD. The HUD defaults are tuned for 1920x1080 and follow GUI scaling. Press `P` to cycle through all four corners, or `[` / `]` to resize it from 50% to 200% in 10% steps. Client settings are persisted.
 
+Both the HUD and full card show the current team score. Ranked mode also shows server-synchronized remaining time, refreshed once per second.
+
 ## Installation and first game
 
 1. Install NeoForge 21.1.248 for Minecraft 1.21.1 and run the server with Java 21.

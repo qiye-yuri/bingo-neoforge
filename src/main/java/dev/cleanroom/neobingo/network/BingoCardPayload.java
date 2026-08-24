@@ -10,7 +10,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /** 向增强客户端同步可直接展示的 Bingo 卡文本快照。 */
-public record BingoCardPayload(String team, String mode, List<String> rows) implements CustomPacketPayload {
+public record BingoCardPayload(
+        String team, String mode, int score, long remainingSeconds, List<String> rows)
+        implements CustomPacketPayload {
     private static final int MAX_TEAM_LENGTH = 32;
     private static final int MAX_MODE_LENGTH = 16;
     private static final int MAX_ROW_LENGTH = 2048;
@@ -32,6 +34,9 @@ public record BingoCardPayload(String team, String mode, List<String> rows) impl
         if (!mode.matches("[A-Z_]{1," + MAX_MODE_LENGTH + "}")) {
             throw new IllegalArgumentException("模式标识不符合协议约束");
         }
+        if (score < 0 || remainingSeconds < -1) {
+            throw new IllegalArgumentException("得分或剩余时间不符合协议约束");
+        }
         if (rows.isEmpty() || rows.size() > MAX_ROWS) {
             throw new IllegalArgumentException("卡片行数或内容无效");
         }
@@ -42,9 +47,15 @@ public record BingoCardPayload(String team, String mode, List<String> rows) impl
         }
     }
 
+    public BingoCardPayload(String team, String mode, List<String> rows) {
+        this(team, mode, 0, -1, rows);
+    }
+
     private static void encode(RegistryFriendlyByteBuf buffer, BingoCardPayload payload) {
         buffer.writeUtf(payload.team(), MAX_TEAM_LENGTH);
         buffer.writeUtf(payload.mode(), MAX_MODE_LENGTH);
+        buffer.writeVarInt(payload.score());
+        buffer.writeVarLong(payload.remainingSeconds() + 1);
         buffer.writeVarInt(payload.rows().size());
         payload.rows().forEach(row -> buffer.writeUtf(row, MAX_ROW_LENGTH));
     }
@@ -52,6 +63,8 @@ public record BingoCardPayload(String team, String mode, List<String> rows) impl
     private static BingoCardPayload decode(RegistryFriendlyByteBuf buffer) {
         String team = buffer.readUtf(MAX_TEAM_LENGTH);
         String mode = buffer.readUtf(MAX_MODE_LENGTH);
+        int score = buffer.readVarInt();
+        long remainingSeconds = buffer.readVarLong() - 1;
         int rowCount = buffer.readVarInt();
         if (rowCount < 1 || rowCount > MAX_ROWS) {
             throw new IllegalArgumentException("卡片行数超出协议限制");
@@ -60,7 +73,7 @@ public record BingoCardPayload(String team, String mode, List<String> rows) impl
         for (int index = 0; index < rowCount; index++) {
             rows.add(buffer.readUtf(MAX_ROW_LENGTH));
         }
-        return new BingoCardPayload(team, mode, rows);
+        return new BingoCardPayload(team, mode, score, remainingSeconds, rows);
     }
 
     private static int columnCount(String row) {

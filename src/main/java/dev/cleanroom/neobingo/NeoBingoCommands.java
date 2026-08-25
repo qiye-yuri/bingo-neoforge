@@ -23,8 +23,10 @@ import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /** 注册并执行服务器权威的 Bingo 命令。 */
@@ -52,6 +54,20 @@ public final class NeoBingoCommands {
                         .then(Commands.argument("count", IntegerArgumentType.integer(2, 8))
                                 .executes(context -> run(context.getSource(), () -> randomizeTeams(
                                         context.getSource(), IntegerArgumentType.getInteger(context, "count"))))))
+                .then(Commands.literal("team")
+                        .requires(NeoBingoPermissions::canAdmin)
+                        .then(Commands.literal("assign")
+                                .then(Commands.argument("player", EntityArgument.entity())
+                                        .then(Commands.argument("team", StringArgumentType.word())
+                                                .executes(context -> run(context.getSource(), () -> assignPlayer(
+                                                        context.getSource(),
+                                                        requiredTargetPlayer(EntityArgument.getEntity(context, "player")),
+                                                        StringArgumentType.getString(context, "team")))))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("player", EntityArgument.entity())
+                                        .executes(context -> run(context.getSource(), () -> removePlayer(
+                                                context.getSource(),
+                                                requiredTargetPlayer(EntityArgument.getEntity(context, "player"))))))))
                 .then(Commands.literal("start")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
@@ -221,6 +237,36 @@ public final class NeoBingoCommands {
         data.store(session);
         announce(source, Component.translatable(
                 "commands.neo_bingo.randomteams.success", session.roster().playerCount(), teamCount));
+    }
+
+    private static void assignPlayer(CommandSourceStack source, ServerPlayer player, String teamName) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        TeamId team = new TeamId(teamName);
+        session.join(new PlayerId(player.getUUID()), team);
+        data.store(session);
+        announce(source, Component.translatable(
+                "commands.neo_bingo.team.assign.success", player.getDisplayName(), team.value()));
+    }
+
+    private static ServerPlayer requiredTargetPlayer(Entity entity) {
+        if (entity instanceof ServerPlayer player) {
+            return player;
+        }
+        throw failure("commands.neo_bingo.error.target_player_only");
+    }
+
+    private static void removePlayer(CommandSourceStack source, ServerPlayer player) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        PlayerId playerId = new PlayerId(player.getUUID());
+        if (session.roster().teamOf(playerId).isEmpty()) {
+            throw failure("commands.neo_bingo.error.target_not_joined");
+        }
+        session.leave(playerId);
+        data.store(session);
+        announce(source, Component.translatable(
+                "commands.neo_bingo.team.remove.success", player.getDisplayName()));
     }
 
     private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {

@@ -70,6 +70,8 @@ Run loader-aware integration tests with:
 - `/neobingo leave` leaves the current team while the lobby is open.
 - `/neobingo book` gives a replacement interactive Bingo settings book.
 - `/neobingo randomteams [count]` randomly and evenly assigns joined lobby players across 2 to 8 teams (default 2; operator only).
+- `/neobingo team assign <player> <team>` assigns an online player to a team during the lobby (operator only).
+- `/neobingo team remove <player>` removes an online player from the Bingo lobby (operator only).
 - `/neobingo start [seed]` starts a standard 5x5 game for a joined player or operator.
 - `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode.
 - `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game.

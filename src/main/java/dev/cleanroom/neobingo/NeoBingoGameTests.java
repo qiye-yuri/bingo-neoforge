@@ -175,6 +175,19 @@ public final class NeoBingoGameTests {
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
         server.getCommands().performPrefixedCommand(secondPlayer.createCommandSourceStack(), "neobingo join blue");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo team assign " + secondPlayer.getUUID() + " green");
+        helper.assertValueEqual(
+                data.restoreSession().orElseThrow().roster().teamOf(secondPlayerId).orElseThrow(),
+                new TeamId("green"),
+                "管理员分配命令应更改目标玩家队伍");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo team remove " + secondPlayer.getUUID());
+        helper.assertTrue(
+                data.restoreSession().orElseThrow().roster().teamOf(secondPlayerId).isEmpty(),
+                "管理员移除命令应将目标玩家移出大厅");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo team assign " + secondPlayer.getUUID() + " blue");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo randomteams 2");
         BingoSession randomized = data.restoreSession().orElseThrow();
         TeamId randomizedPlayerTeam = randomized.roster().teamOf(playerId).orElseThrow();

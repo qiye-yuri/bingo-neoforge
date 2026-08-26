@@ -32,7 +32,7 @@ Both the HUD and full card show the current team score. Ranked mode also shows s
 4. Start the server and have players run `/neobingo join <team>`.
 5. A player who joined a team, or an operator, can run `/neobingo start` for standard mode or select another mode below.
 
-On login, each player receives a vanilla interactive Bingo settings book for choosing a team, game mode, and MAX-to-D difficulty. It also includes administrator entries for random teams, assigning or removing players, rerolling the card, and ending a game. Commands needing arguments or confirmation are inserted into chat first. Existing books are not duplicated, outdated copies are upgraded, and reconnecting or running `/neobingo book` replaces a lost copy.
+On login, each player receives a vanilla interactive Bingo settings book for choosing a team, game mode, and MAX-to-D difficulty. It also includes random teams and a clickable chat-based administrator panel for assigning or removing online players, rerolling the card, and ending a game. Team assignments color player names in the vanilla Tab list. Existing books are not duplicated, outdated copies are upgraded, and reconnecting or running `/neobingo book` replaces a lost copy.
 
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
 

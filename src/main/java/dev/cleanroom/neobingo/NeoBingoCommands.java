@@ -25,9 +25,14 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+
+import java.util.List;
 
 /** 注册并执行服务器权威的 Bingo 命令。 */
 public final class NeoBingoCommands {
@@ -68,6 +73,9 @@ public final class NeoBingoCommands {
                                         .executes(context -> run(context.getSource(), () -> removePlayer(
                                                 context.getSource(),
                                                 requiredTargetPlayer(EntityArgument.getEntity(context, "player"))))))))
+                .then(Commands.literal("manage")
+                        .requires(NeoBingoPermissions::canAdmin)
+                        .executes(context -> run(context.getSource(), () -> showTeamManager(context.getSource()))))
                 .then(Commands.literal("start")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
@@ -120,6 +128,7 @@ public final class NeoBingoCommands {
         TeamId team = new TeamId(teamName);
         session.join(new PlayerId(player.getUUID()), team);
         data.store(session);
+        BingoScoreboardTeams.assign(player, team);
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.join.success", team.value()), false);
     }
 
@@ -219,6 +228,7 @@ public final class NeoBingoCommands {
         }
         session.leave(playerId);
         data.store(session);
+        BingoScoreboardTeams.remove(player);
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.leave.success"), false);
     }
 
@@ -235,6 +245,7 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         session.randomizeTeams(teamCount, new java.util.Random(source.getLevel().getRandom().nextLong()));
         data.store(session);
+        BingoScoreboardTeams.synchronize(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
                 "commands.neo_bingo.randomteams.success", session.roster().playerCount(), teamCount));
     }
@@ -245,6 +256,7 @@ public final class NeoBingoCommands {
         TeamId team = new TeamId(teamName);
         session.join(new PlayerId(player.getUUID()), team);
         data.store(session);
+        BingoScoreboardTeams.assign(player, team);
         announce(source, Component.translatable(
                 "commands.neo_bingo.team.assign.success", player.getDisplayName(), team.value()));
     }
@@ -265,8 +277,32 @@ public final class NeoBingoCommands {
         }
         session.leave(playerId);
         data.store(session);
+        BingoScoreboardTeams.remove(player);
         announce(source, Component.translatable(
                 "commands.neo_bingo.team.remove.success", player.getDisplayName()));
+    }
+
+    private static void showTeamManager(CommandSourceStack source) {
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.manage.title")
+                .withStyle(ChatFormatting.BOLD), false);
+        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+            MutableComponent line = Component.literal("• ").append(player.getDisplayName()).append(" ");
+            for (String team : List.of("red", "blue", "green", "yellow")) {
+                line.append(commandButton(team, "/neobingo team assign " + player.getUUID() + " " + team));
+            }
+            line.append(commandButton("×", "/neobingo team remove " + player.getUUID()));
+            source.sendSuccess(() -> line, false);
+        }
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.manage.actions")
+                .append(" ")
+                .append(commandButton("↻", "/neobingo reroll"))
+                .append(commandButton("■", "/neobingo end")), false);
+    }
+
+    private static Component commandButton(String label, String command) {
+        return Component.literal("[" + label + "]")
+                .withStyle(style -> style.withColor(ChatFormatting.GOLD)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
     }
 
     private static void start(CommandSourceStack source, long seed, GameMode mode, DifficultyTier difficulty) {

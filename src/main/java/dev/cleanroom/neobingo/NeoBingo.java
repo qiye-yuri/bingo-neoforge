@@ -26,6 +26,7 @@ public final class NeoBingo {
         NeoForge.EVENT_BUS.addListener(InventoryClaimTicker::onServerTick);
         NeoForge.EVENT_BUS.addListener(RankedCountdownTicker::onServerTick);
         NeoForge.EVENT_BUS.addListener(BingoSettingsBook::onPlayerLogin);
+        NeoForge.EVENT_BUS.addListener(BingoScoreboardTeams::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(NeoBingoNetwork::onPlayerLogin);
         LOGGER.info("Neo Bingo initialized");
     }

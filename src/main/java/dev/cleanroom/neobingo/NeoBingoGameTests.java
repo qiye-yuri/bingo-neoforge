@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -174,6 +175,10 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(settingsBookCount, 1L, "重复领取不应产生多本设置书");
 
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo join red");
+        helper.assertValueEqual(
+                server.getScoreboard().getPlayersTeam(player.getScoreboardName()).getColor(),
+                ChatFormatting.RED,
+                "加入红队后 Tab 玩家名应显示红色");
         server.getCommands().performPrefixedCommand(secondPlayer.createCommandSourceStack(), "neobingo join blue");
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo team assign " + secondPlayer.getUUID() + " green");
@@ -181,13 +186,21 @@ public final class NeoBingoGameTests {
                 data.restoreSession().orElseThrow().roster().teamOf(secondPlayerId).orElseThrow(),
                 new TeamId("green"),
                 "管理员分配命令应更改目标玩家队伍");
+        helper.assertValueEqual(
+                server.getScoreboard().getPlayersTeam(secondPlayer.getScoreboardName()).getColor(),
+                ChatFormatting.GREEN,
+                "管理员分队后 Tab 玩家名应同步队伍颜色");
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo team remove " + secondPlayer.getUUID());
         helper.assertTrue(
                 data.restoreSession().orElseThrow().roster().teamOf(secondPlayerId).isEmpty(),
                 "管理员移除命令应将目标玩家移出大厅");
+        helper.assertTrue(
+                server.getScoreboard().getPlayersTeam(secondPlayer.getScoreboardName()) == null,
+                "移出大厅后应清除 Tab 玩家名颜色");
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo team assign " + secondPlayer.getUUID() + " blue");
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo manage");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo randomteams 2");
         BingoSession randomized = data.restoreSession().orElseThrow();
         TeamId randomizedPlayerTeam = randomized.roster().teamOf(playerId).orElseThrow();

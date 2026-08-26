@@ -22,7 +22,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 2;
+    private static final int BOOK_VERSION = 3;
     private static final int DEFAULT_RANKED_SECONDS = 900;
 
     private BingoSettingsBook() {
@@ -112,6 +112,22 @@ public final class BingoSettingsBook {
                 .append(button("book.neo_bingo.randomteams.four", "/neobingo randomteams 4"))
                 .append("\n\n")
                 .append(Component.translatable("book.neo_bingo.admin_only").withStyle(ChatFormatting.DARK_GRAY)));
+        pages.add(Component.translatable("book.neo_bingo.admin.title")
+                .withStyle(ChatFormatting.BOLD)
+                .append("\n")
+                .append(Component.translatable("book.neo_bingo.admin.description")
+                        .withStyle(ChatFormatting.DARK_GRAY))
+                .append("\n\n")
+                .append(suggestButton("book.neo_bingo.admin.assign", "/neobingo team assign "))
+                .append("\n")
+                .append(suggestButton("book.neo_bingo.admin.remove", "/neobingo team remove "))
+                .append("\n")
+                .append(suggestButton("book.neo_bingo.admin.reroll", "/neobingo reroll"))
+                .append("\n")
+                .append(suggestButton("book.neo_bingo.admin.end", "/neobingo end"))
+                .append("\n\n")
+                .append(Component.translatable("book.neo_bingo.admin.confirm")
+                        .withStyle(ChatFormatting.DARK_GRAY)));
         return List.copyOf(pages);
     }
 
@@ -147,5 +163,16 @@ public final class BingoSettingsBook {
                         .withColor(ChatFormatting.DARK_GREEN)
                         .withUnderlined(true)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
+    }
+
+    /** 将需要补充参数或二次确认的管理员命令填入聊天栏。 */
+    private static Component suggestButton(String translationKey, String command) {
+        return Component.literal("[ ")
+                .append(Component.translatable(translationKey))
+                .append(" ]")
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.GOLD)
+                        .withUnderlined(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)));
     }
 }

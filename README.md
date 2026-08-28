@@ -75,7 +75,9 @@ Run loader-aware integration tests with:
 - `/neobingo start [seed]` starts a standard 5x5 game for a joined player or operator.
 - `/neobingo start <standard|lockout|hidden> [seed]` starts an explicitly selected mode.
 - `/neobingo start ranked <seconds> [seed]` starts a timed score-ranked game.
-- `/neobingo reroll [seed]` replaces the running card while preserving teams and mode (operator only).
+- `/neobingo reroll [seed]` prepares or refreshes the next card in the lobby; rerolling is forbidden after the game starts (operator only).
+- `/neobingo reroll mix <MAX> <S> <A> <B> <C> <D>` refreshes with exact per-tier counts; all six counts must total 25.
+- `/neobingo start <mode> mix <MAX> <S> <A> <B> <C> <D>` starts with exact per-tier item counts totaling 25.
 - `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.
 - `/neobingo status` displays the current lifecycle, mode, seed, teams, and winner.

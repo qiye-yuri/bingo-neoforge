@@ -102,24 +102,22 @@ class BingoSessionTest {
     }
 
     @Test
-    void rerollPreservesModeAndRosterWhileClearingClaims() {
-        BingoSession session = runningSession();
-        session.claim(PLAYER, 0);
-
+    void lobbyRerollPreparesCardForStart() {
+        BingoSession session = new BingoSession();
+        session.join(PLAYER, RED);
         session.reroll(5, pool(), 99L);
-
-        assertEquals(SessionState.RUNNING, session.state());
+        assertEquals(SessionState.LOBBY, session.state());
         assertEquals(99L, session.seed().orElseThrow());
-        assertEquals(GameMode.STANDARD, session.game().orElseThrow().mode());
-        assertEquals(RED, session.roster().teamOf(PLAYER).orElseThrow());
-        assertEquals(0, session.game().orElseThrow().score(RED));
+        var prepared = session.game().orElseThrow().card().objectives();
+        session.start(5, pool(), 42L, GameMode.LOCKOUT);
+        assertEquals(prepared, session.game().orElseThrow().card().objectives());
+        assertEquals(GameMode.LOCKOUT, session.game().orElseThrow().mode());
+        assertEquals(99L, session.seed().orElseThrow());
     }
 
     @Test
-    void lobbyAndFinishedSessionsCannotBeRerolled() {
-        BingoSession lobby = new BingoSession();
-        assertThrows(IllegalStateException.class, () -> lobby.reroll(5, pool(), 1L));
-
+    void runningAndFinishedSessionsCannotBeRerolled() {
+        assertThrows(IllegalStateException.class, () -> runningSession().reroll(5, pool(), 1L));
         BingoSession finished = runningSession();
         finished.end();
         assertThrows(IllegalStateException.class, () -> finished.reroll(5, pool(), 1L));

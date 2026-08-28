@@ -3,6 +3,9 @@ package dev.cleanroom.neobingo;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.cleanroom.neobingo.application.ClaimBatchResult;
@@ -12,6 +15,7 @@ import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.DifficultyTier;
+import dev.cleanroom.neobingo.domain.DifficultyDistribution;
 import dev.cleanroom.neobingo.domain.GameMode;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.SessionState;
@@ -33,6 +37,7 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 import java.util.List;
+import java.util.EnumMap;
 
 /** 注册并执行服务器权威的 Bingo 命令。 */
 public final class NeoBingoCommands {
@@ -104,7 +109,12 @@ public final class NeoBingoCommands {
                                         context.getSource(),
                                         LongArgumentType.getLong(context, "seed"),
                                         DifficultyTier.C))))
-                        .then(rerollDifficultyCommands()))
+                        .then(rerollDifficultyCommands())
+                        .then(Commands.literal("mix").then(distributionArguments(context -> run(
+                                context.getSource(), () -> reroll(
+                                        context.getSource(),
+                                        context.getSource().getLevel().getRandom().nextLong(),
+                                        distribution(context)))))))
                 .then(Commands.literal("card")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
@@ -147,7 +157,13 @@ public final class NeoBingoCommands {
                                 LongArgumentType.getLong(context, "seed"),
                                 mode,
                                 DifficultyTier.C))))
-                .then(difficultyCommands(mode));
+                .then(difficultyCommands(mode))
+                .then(Commands.literal("mix").then(distributionArguments(context -> run(
+                        context.getSource(), () -> start(
+                                context.getSource(),
+                                context.getSource().getLevel().getRandom().nextLong(),
+                                mode,
+                                distribution(context))))));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> difficultyCommands(GameMode mode) {
@@ -183,7 +199,13 @@ public final class NeoBingoCommands {
                                         IntegerArgumentType.getInteger(context, "seconds"),
                                         LongArgumentType.getLong(context, "seed"),
                                         DifficultyTier.C))))
-                        .then(rankedDifficultyCommands()));
+                        .then(rankedDifficultyCommands())
+                        .then(Commands.literal("mix").then(distributionArguments(context -> run(
+                                context.getSource(), () -> startRanked(
+                                        context.getSource(),
+                                        IntegerArgumentType.getInteger(context, "seconds"),
+                                        context.getSource().getLevel().getRandom().nextLong(),
+                                        distribution(context)))))));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> rankedDifficultyCommands() {
@@ -216,6 +238,28 @@ public final class NeoBingoCommands {
                                     context.getSource(), LongArgumentType.getLong(context, "seed"), tier)))));
         }
         return root;
+    }
+
+    private static RequiredArgumentBuilder<CommandSourceStack, Integer> distributionArguments(
+            Command<CommandSourceStack> action) {
+        return Commands.argument("max_count", IntegerArgumentType.integer(0, 25))
+                .then(Commands.argument("s_count", IntegerArgumentType.integer(0, 25))
+                        .then(Commands.argument("a_count", IntegerArgumentType.integer(0, 25))
+                                .then(Commands.argument("b_count", IntegerArgumentType.integer(0, 25))
+                                        .then(Commands.argument("c_count", IntegerArgumentType.integer(0, 25))
+                                                .then(Commands.argument("d_count", IntegerArgumentType.integer(0, 25))
+                                                        .executes(action))))));
+    }
+
+    private static DifficultyDistribution distribution(CommandContext<CommandSourceStack> context) {
+        EnumMap<DifficultyTier, Integer> counts = new EnumMap<>(DifficultyTier.class);
+        counts.put(DifficultyTier.MAX, IntegerArgumentType.getInteger(context, "max_count"));
+        counts.put(DifficultyTier.S, IntegerArgumentType.getInteger(context, "s_count"));
+        counts.put(DifficultyTier.A, IntegerArgumentType.getInteger(context, "a_count"));
+        counts.put(DifficultyTier.B, IntegerArgumentType.getInteger(context, "b_count"));
+        counts.put(DifficultyTier.C, IntegerArgumentType.getInteger(context, "c_count"));
+        counts.put(DifficultyTier.D, IntegerArgumentType.getInteger(context, "d_count"));
+        return new DifficultyDistribution(counts);
     }
 
     private static void leave(CommandSourceStack source) throws Exception {
@@ -314,7 +358,23 @@ public final class NeoBingoCommands {
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
-                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), seed));
+                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), session.seed().orElseThrow()));
+    }
+
+    private static void start(
+            CommandSourceStack source,
+            long seed,
+            GameMode mode,
+            DifficultyDistribution distribution) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        requireStartPermission(source, session);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.start(definition.size(), BingoCardDefinitions.objectives(distribution, seed), seed, mode);
+        data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
+        announce(source, Component.translatable(
+                "commands.neo_bingo.start.success", BingoModeText.displayName(mode), session.seed().orElseThrow()));
     }
 
     private static void reroll(CommandSourceStack source, long seed, DifficultyTier difficulty) {
@@ -322,6 +382,16 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.reroll(definition.size(), BingoCardDefinitions.objectives(difficulty, seed), seed);
+        data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
+        announce(source, Component.translatable("commands.neo_bingo.reroll.success", seed));
+    }
+
+    private static void reroll(CommandSourceStack source, long seed, DifficultyDistribution distribution) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.reroll(definition.size(), BingoCardDefinitions.objectives(distribution, seed), seed);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable("commands.neo_bingo.reroll.success", seed));
@@ -340,7 +410,23 @@ public final class NeoBingoCommands {
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
-                "commands.neo_bingo.start.ranked.success", seconds, seed));
+                "commands.neo_bingo.start.ranked.success", seconds, session.seed().orElseThrow()));
+    }
+
+    private static void startRanked(
+            CommandSourceStack source,
+            int seconds,
+            long seed,
+            DifficultyDistribution distribution) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        requireStartPermission(source, session);
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.startRanked(definition.size(), BingoCardDefinitions.objectives(distribution, seed), seed, seconds * 20L);
+        data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
+        announce(source, Component.translatable(
+                "commands.neo_bingo.start.ranked.success", seconds, session.seed().orElseThrow()));
     }
 
     private static void requireStartPermission(CommandSourceStack source, BingoSession session) {

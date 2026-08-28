@@ -3,6 +3,7 @@ package dev.cleanroom.neobingo.config;
 import dev.cleanroom.neobingo.NeoBingo;
 import dev.cleanroom.neobingo.domain.DifficultyCardGenerator;
 import dev.cleanroom.neobingo.domain.DifficultyTier;
+import dev.cleanroom.neobingo.domain.DifficultyDistribution;
 import dev.cleanroom.neobingo.domain.ObjectiveId;
 import java.io.IOException;
 import java.util.List;
@@ -44,6 +45,15 @@ public final class BingoCardDefinitions {
             throw new IllegalStateException("Bingo 难度列表尚未加载");
         }
         return DifficultyCardGenerator.generate(tierList.tiers(), tierList.exclusionGroups(), tier, seed);
+    }
+
+    public static List<ObjectiveId> objectives(DifficultyDistribution distribution, long seed) {
+        DifficultyTierList tierList = currentTiers;
+        if (tierList == null) {
+            throw new IllegalStateException("Bingo 难度列表尚未加载");
+        }
+        return DifficultyCardGenerator.generate(
+                tierList.tiers(), tierList.exclusionGroups(), distribution, seed);
     }
 
     private static void reload(ResourceManager resources) {

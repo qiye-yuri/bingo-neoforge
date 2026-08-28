@@ -100,16 +100,16 @@ public final class NeoBingoGameTests {
     }
 
     @GameTest(templateNamespace = NeoBingo.MOD_ID, template = "empty")
-    public static void rerollKeepsModeAndClearsClaims(GameTestHelper helper) {
+    public static void lobbyRerollIsUsedWhenGameStarts(GameTestHelper helper) {
         BingoSession session = lobbyWithTwoTeams();
-        session.start(5, objectives(), 42L, GameMode.LOCKOUT);
-        session.claim(PLAYER, 0);
-
         session.reroll(5, objectives(), 99L);
+        List<ObjectiveId> prepared = session.game().orElseThrow().card().objectives();
+        session.start(5, objectives(), 42L, GameMode.LOCKOUT);
 
-        helper.assertValueEqual(session.game().orElseThrow().mode(), GameMode.LOCKOUT, "重新生成应保留游戏模式");
-        helper.assertValueEqual(session.game().orElseThrow().score(RED), 0, "重新生成应清空已有认领");
-        helper.assertValueEqual(session.seed().orElseThrow(), 99L, "重新生成应更新种子");
+        helper.assertValueEqual(session.state(), SessionState.RUNNING, "预生成棋盘应能正常开局");
+        helper.assertValueEqual(session.game().orElseThrow().mode(), GameMode.LOCKOUT, "开局时应应用所选游戏模式");
+        helper.assertValueEqual(session.game().orElseThrow().card().objectives(), prepared, "开局应沿用大厅预生成棋盘");
+        helper.assertValueEqual(session.seed().orElseThrow(), 99L, "开局应沿用预生成种子");
         helper.succeed();
     }
 
@@ -207,6 +207,10 @@ public final class NeoBingoGameTests {
         helper.assertFalse(
                 randomizedPlayerTeam.equals(randomized.roster().teamOf(secondPlayerId).orElseThrow()),
                 "两名玩家随机分入两队时应位于不同队伍");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo reroll difficulty s 43");
+        helper.assertValueEqual(
+                data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "刷新棋盘后应保持大厅状态");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo start 42");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
 
@@ -215,13 +219,10 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(
                 running.roster().teamOf(playerId).orElseThrow(), randomizedPlayerTeam, "开局后应保留随机分队结果");
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
-        helper.assertValueEqual(running.seed().orElseThrow(), 42L, "开局命令应使用指定种子");
-
-        server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack(), "neobingo reroll difficulty s 43");
-        BingoSession rerolled = data.restoreSession().orElseThrow();
-        helper.assertValueEqual(rerolled.state(), SessionState.RUNNING, "重新生成后会话应继续运行");
-        helper.assertValueEqual(rerolled.seed().orElseThrow(), 43L, "难度重新生成命令应使用指定种子");
+        helper.assertValueEqual(running.seed().orElseThrow(), 43L, "开局应沿用大厅中预生成棋盘的种子");
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo reroll");
+        helper.assertValueEqual(
+                data.restoreSession().orElseThrow().seed().orElseThrow(), 43L, "游戏过程中不得刷新棋盘");
 
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo end");
         helper.assertValueEqual(

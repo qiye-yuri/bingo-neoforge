@@ -1,6 +1,5 @@
 package dev.cleanroom.neobingo;
 
-import dev.cleanroom.neobingo.domain.DifficultyTier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 4;
+    private static final int BOOK_VERSION = 5;
     private static final int DEFAULT_RANKED_SECONDS = 900;
 
     private BingoSettingsBook() {
@@ -127,26 +126,26 @@ public final class BingoSettingsBook {
 
     private static Component modePage(String titleKey, String mode) {
         MutableComponent page = Component.translatable(titleKey).withStyle(ChatFormatting.BOLD);
-        page.append("\n").append(Component.translatable("book.neo_bingo.choose_difficulty"));
-        for (DifficultyTier tier : DifficultyTier.values()) {
-            page.append("\n").append(button(
-                    "book.neo_bingo.difficulty." + tier.name().toLowerCase(),
-                    "/neobingo start " + mode + " difficulty " + tier.name().toLowerCase()));
-        }
+        page.append("\n").append(Component.translatable("book.neo_bingo.choose_distribution"));
+        appendDistributionButtons(page, "/neobingo start " + mode + " mix ");
         return page;
     }
 
     private static Component rankedPage() {
         MutableComponent page = Component.translatable(
                 "book.neo_bingo.mode.ranked", DEFAULT_RANKED_SECONDS / 60).withStyle(ChatFormatting.BOLD);
-        page.append("\n").append(Component.translatable("book.neo_bingo.choose_difficulty"));
-        for (DifficultyTier tier : DifficultyTier.values()) {
-            page.append("\n").append(button(
-                    "book.neo_bingo.difficulty." + tier.name().toLowerCase(),
-                    "/neobingo start ranked " + DEFAULT_RANKED_SECONDS
-                            + " difficulty " + tier.name().toLowerCase()));
-        }
+        page.append("\n").append(Component.translatable("book.neo_bingo.choose_distribution"));
+        appendDistributionButtons(page, "/neobingo start ranked " + DEFAULT_RANKED_SECONDS + " mix ");
         return page;
+    }
+
+    /** 按 MAX、S、A、B、C、D 的顺序提供三组 25 格预设。 */
+    private static void appendDistributionButtons(MutableComponent page, String commandPrefix) {
+        page.append("\n").append(button("book.neo_bingo.distribution.balanced", commandPrefix + "0 3 4 5 6 7"));
+        page.append("\n").append(button("book.neo_bingo.distribution.hard", commandPrefix + "0 8 7 5 3 2"));
+        page.append("\n").append(button("book.neo_bingo.distribution.easy", commandPrefix + "0 1 2 4 8 10"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.distribution.order")
+                .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     private static Component button(String translationKey, String command) {

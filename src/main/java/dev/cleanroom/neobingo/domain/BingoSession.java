@@ -64,8 +64,12 @@ public final class BingoSession {
         if (roster.playerCount() == 0) {
             throw new IllegalStateException("Cannot start a game without players");
         }
-        this.game = new BingoGame(BingoCard.generate(cardSize, objectivePool, seed), mode);
-        this.seed = seed;
+        boolean hasPreparedCard = game != null;
+        BingoCard card = hasPreparedCard ? game.card() : BingoCard.generate(cardSize, objectivePool, seed);
+        this.game = new BingoGame(card, mode);
+        if (!hasPreparedCard) {
+            this.seed = seed;
+        }
         this.state = SessionState.RUNNING;
     }
 
@@ -82,11 +86,9 @@ public final class BingoSession {
     }
 
     public void reroll(int cardSize, List<ObjectiveId> objectivePool, long seed) {
-        requireState(SessionState.RUNNING);
-        GameMode mode = game.mode();
-        game = new BingoGame(BingoCard.generate(cardSize, objectivePool, seed), mode);
+        requireState(SessionState.LOBBY);
+        game = new BingoGame(BingoCard.generate(cardSize, objectivePool, seed), GameMode.STANDARD);
         this.seed = seed;
-        winner = null;
     }
 
     public void end() {
@@ -130,7 +132,7 @@ public final class BingoSession {
     }
 
     public Optional<Long> seed() {
-        return state == SessionState.LOBBY ? Optional.empty() : Optional.of(seed);
+        return game == null ? Optional.empty() : Optional.of(seed);
     }
 
     public Optional<TeamId> winner() {

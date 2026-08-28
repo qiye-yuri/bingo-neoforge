@@ -34,6 +34,34 @@ class DifficultyCardGeneratorTest {
                 () -> DifficultyCardGenerator.generate(tiers(1), DifficultyTier.MAX, 42L));
     }
 
+    @Test
+    void distributionSelectsExactCountFromEveryTier() {
+        Map<DifficultyTier, List<ObjectiveId>> tiers = tiers(25);
+        DifficultyDistribution distribution = new DifficultyDistribution(Map.of(
+                DifficultyTier.MAX, 1,
+                DifficultyTier.S, 2,
+                DifficultyTier.A, 3,
+                DifficultyTier.B, 4,
+                DifficultyTier.C, 5,
+                DifficultyTier.D, 10));
+
+        List<ObjectiveId> card = DifficultyCardGenerator.generate(tiers, List.of(), distribution, 42L);
+
+        assertEquals(25, card.size());
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            String prefix = "test:" + tier.name().toLowerCase() + "_";
+            assertEquals(distribution.count(tier), card.stream()
+                    .filter(objective -> objective.value().startsWith(prefix))
+                    .count());
+        }
+    }
+
+    @Test
+    void distributionMustContainExactlyTwentyFiveSlots() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new DifficultyDistribution(Map.of(DifficultyTier.C, 24)));
+    }
+
     private static Map<DifficultyTier, List<ObjectiveId>> tiers(int count) {
         Map<DifficultyTier, List<ObjectiveId>> tiers = new EnumMap<>(DifficultyTier.class);
         for (DifficultyTier tier : DifficultyTier.values()) {

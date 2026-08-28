@@ -31,8 +31,8 @@ public record BingoSessionSnapshot(
         assignments = Map.copyOf(assignments);
 
         if (state == SessionState.LOBBY) {
-            if (game.isPresent() || seed.isPresent() || winner.isPresent() || remainingTicks.isPresent()) {
-                throw new IllegalArgumentException("Lobby snapshots cannot contain game results");
+            if (game.isPresent() != seed.isPresent() || winner.isPresent() || remainingTicks.isPresent()) {
+                throw new IllegalArgumentException("大厅预生成卡片必须同时包含卡片和种子，且不能包含游戏结果");
             }
         } else if (game.isEmpty() || seed.isEmpty()) {
             throw new IllegalArgumentException("Started sessions require a game and seed");

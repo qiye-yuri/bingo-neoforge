@@ -77,7 +77,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-jar.ps1
 - `/neobingo start [seed]`：开始一局 5×5 标准模式游戏，已加入队伍的玩家或管理员可用。
 - `/neobingo start <standard|lockout|hidden> [seed]`：明确选择标准、锁定或隐藏模式并开始游戏。
 - `/neobingo start ranked <秒数> [种子]`：开始按得分排名的限时游戏。
-- `/neobingo reroll [seed]`：保留队伍和模式并重新生成正在运行的卡片，仅管理员可用。
+- `/neobingo reroll [seed]`：在大厅阶段预生成或刷新下一张棋盘；游戏开始后禁止刷新，仅管理员可用。
+- `/neobingo reroll mix <MAX> <S> <A> <B> <C> <D>`：按各难度数量刷新棋盘，六项之和必须为 25。
+- `/neobingo start <模式> mix <MAX> <S> <A> <B> <C> <D>`：按六档难度的精确物品数量开局，六项之和必须为 25。
 - `/neobingo card`：在原版聊天栏中显示所在队伍的 Bingo 卡。
 - `/neobingo claim`：立即检查玩家的服务端物品栏，并认领其中匹配的目标。
 - `/neobingo status`：显示当前阶段、模式、种子、队伍及胜者。

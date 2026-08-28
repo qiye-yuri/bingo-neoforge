@@ -24,23 +24,35 @@ public final class DifficultyCardGenerator {
             List<List<ObjectiveId>> exclusionGroups,
             DifficultyTier tier,
             long seed) {
+        return generate(tiers, exclusionGroups, DifficultyDistribution.uniform(tier), seed);
+    }
+
+    public static List<ObjectiveId> generate(
+            Map<DifficultyTier, List<ObjectiveId>> tiers,
+            List<List<ObjectiveId>> exclusionGroups,
+            DifficultyDistribution distribution,
+            long seed) {
         Objects.requireNonNull(tiers, "tiers");
-        Objects.requireNonNull(tier, "tier");
+        Objects.requireNonNull(distribution, "distribution");
         Random random = new Random(seed);
         List<ObjectiveId> selected = new ArrayList<>(25);
-        List<ObjectiveId> candidates = new ArrayList<>(Objects.requireNonNull(tiers.get(tier), tier.name()));
-        Collections.shuffle(candidates, random);
-        for (ObjectiveId candidate : candidates) {
-            if (selected.size() >= 25) {
-                break;
+        for (DifficultyTier tier : DifficultyTier.values()) {
+            int required = distribution.count(tier);
+            List<ObjectiveId> candidates = new ArrayList<>(Objects.requireNonNull(tiers.get(tier), tier.name()));
+            Collections.shuffle(candidates, random);
+            int before = selected.size();
+            for (ObjectiveId candidate : candidates) {
+                if (selected.size() - before >= required) {
+                    break;
+                }
+                if (!selected.contains(candidate) && exclusionGroups.stream().noneMatch(group -> group.contains(candidate)
+                        && group.stream().anyMatch(selected::contains))) {
+                    selected.add(candidate);
+                }
             }
-            if (exclusionGroups.stream().noneMatch(group -> group.contains(candidate)
-                    && group.stream().anyMatch(selected::contains))) {
-                selected.add(candidate);
+            if (selected.size() - before < required) {
+                throw new IllegalArgumentException("难度 " + tier + " 在应用互斥组后没有足够的可用目标，需要 " + required + " 个");
             }
-        }
-        if (selected.size() < 25) {
-            throw new IllegalArgumentException("难度 " + tier + " 在应用互斥组后至少需要 25 个可用目标");
         }
         Collections.shuffle(selected, random);
         return List.copyOf(selected);

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import dev.cleanroom.neobingo.config.BingoCardDefinitions;
 import dev.cleanroom.neobingo.client.BingoClientConfig;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
+import dev.cleanroom.neobingo.world.MatchWorldLifecycleTicker;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -25,6 +26,7 @@ public final class NeoBingo {
         NeoForge.EVENT_BUS.addListener(NeoBingoCommands::register);
         NeoForge.EVENT_BUS.addListener(InventoryClaimTicker::onServerTick);
         NeoForge.EVENT_BUS.addListener(RankedCountdownTicker::onServerTick);
+        NeoForge.EVENT_BUS.addListener(MatchWorldLifecycleTicker::onServerTick);
         NeoForge.EVENT_BUS.addListener(BingoSettingsBook::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(BingoScoreboardTeams::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(NeoBingoNetwork::onPlayerLogin);

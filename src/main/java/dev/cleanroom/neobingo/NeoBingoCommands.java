@@ -25,6 +25,7 @@ import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
+import dev.cleanroom.neobingo.world.RuntimeMatchWorldManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -355,6 +356,7 @@ public final class NeoBingoCommands {
         requireStartPermission(source, session);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.start(definition.size(), BingoCardDefinitions.objectives(difficulty, seed), seed, mode);
+        enterMatchWorlds(source, session);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
@@ -371,6 +373,7 @@ public final class NeoBingoCommands {
         requireStartPermission(source, session);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.start(definition.size(), BingoCardDefinitions.objectives(distribution, seed), seed, mode);
+        enterMatchWorlds(source, session);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
@@ -407,6 +410,7 @@ public final class NeoBingoCommands {
                 BingoCardDefinitions.objectives(difficulty, seed),
                 seed,
                 Math.multiplyExact(seconds, 20L));
+        enterMatchWorlds(source, session);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
@@ -423,6 +427,7 @@ public final class NeoBingoCommands {
         requireStartPermission(source, session);
         BingoCardDefinition definition = BingoCardDefinitions.current();
         session.startRanked(definition.size(), BingoCardDefinitions.objectives(distribution, seed), seed, seconds * 20L);
+        enterMatchWorlds(source, session);
         data.store(session);
         NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
         announce(source, Component.translatable(
@@ -461,7 +466,26 @@ public final class NeoBingoCommands {
         BingoSession session = requiredSession(data);
         session.end();
         data.store(session);
+        leaveMatchWorlds(source);
         announce(source, Component.translatable("commands.neo_bingo.end.success"));
+    }
+
+    private static void enterMatchWorlds(CommandSourceStack source, BingoSession session) {
+        RuntimeMatchWorldManager.create(source.getServer(), session.seed().orElseThrow());
+        try {
+            for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+                if (session.roster().teamOf(new PlayerId(player.getUUID())).isPresent()) {
+                    RuntimeMatchWorldManager.sendToMatch(player);
+                }
+            }
+        } catch (RuntimeException exception) {
+            RuntimeMatchWorldManager.finish(source.getServer());
+            throw exception;
+        }
+    }
+
+    private static void leaveMatchWorlds(CommandSourceStack source) {
+        RuntimeMatchWorldManager.finish(source.getServer());
     }
 
     private static void claim(CommandSourceStack source) throws Exception {

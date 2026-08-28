@@ -1,0 +1,173 @@
+package dev.cleanroom.neobingo.world;
+
+import com.google.common.collect.ImmutableList;
+import dev.cleanroom.neobingo.NeoBingo;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.progress.LoggerChunkProgressListener;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.border.BorderChangeListener;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.storage.DerivedLevelData;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.LevelEvent;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.Random;
+import net.minecraft.world.entity.RelativeMovement;
+
+/** 在服务器运行期间创建并卸载单局独占的三维度世界组。 */
+public final class RuntimeMatchWorldManager {
+    private static MatchWorldGroup active;
+    private static final AtomicLong MATCH_SEQUENCE = new AtomicLong(System.currentTimeMillis());
+
+    private RuntimeMatchWorldManager() {
+    }
+
+    public static synchronized Optional<MatchWorldGroup> active() {
+        return Optional.ofNullable(active);
+    }
+
+    public static synchronized Optional<ServerLevel> portalTarget(
+            ServerLevel source,
+            ResourceKey<Level> vanillaTarget) {
+        if (active == null || !active.levels().contains(source)) {
+            return Optional.empty();
+        }
+        if (vanillaTarget == Level.NETHER) {
+            return Optional.of(active.nether());
+        }
+        if (vanillaTarget == Level.END) {
+            return Optional.of(active.end());
+        }
+        if (vanillaTarget == Level.OVERWORLD) {
+            return Optional.of(active.overworld());
+        }
+        return Optional.empty();
+    }
+
+    public static synchronized MatchWorldGroup create(MinecraftServer server, long matchId, long seed) {
+        if (active != null) {
+            throw new IllegalStateException("已有运行中的比赛世界组");
+        }
+        String root = "matches/" + Long.toUnsignedString(matchId, 36);
+        ResourceKey<Level> overworldKey = levelKey(root + "/overworld");
+        ResourceKey<Level> netherKey = levelKey(root + "/the_nether");
+        ResourceKey<Level> endKey = levelKey(root + "/the_end");
+
+        ServerLevel overworld = createLevel(server, overworldKey, LevelStem.OVERWORLD, true);
+        ServerLevel nether = createLevel(server, netherKey, LevelStem.NETHER, false);
+        ServerLevel end = createLevel(server, endKey, LevelStem.END, false);
+        end.setDragonFight(new EndDragonFight(end, seed, EndDragonFight.Data.DEFAULT));
+        Random random = new Random(seed);
+        int spawnX = random.nextInt(-8000, 8001);
+        int spawnZ = random.nextInt(-8000, 8001);
+        int spawnY = overworld.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnX, spawnZ);
+        active = new MatchWorldGroup(
+                matchId, seed, overworldKey, netherKey, endKey,
+                new net.minecraft.core.BlockPos(spawnX, spawnY, spawnZ), overworld, nether, end);
+        NeoBingo.LOGGER.info("已创建运行时比赛世界组：{}", root);
+        return active;
+    }
+
+    public static MatchWorldGroup create(MinecraftServer server, long seed) {
+        return create(server, MATCH_SEQUENCE.incrementAndGet(), seed);
+    }
+
+    public static void sendToMatch(ServerPlayer player) {
+        ServerLevel level = active().orElseThrow(() -> new IllegalStateException("比赛世界尚未创建")).overworld();
+        var base = active().orElseThrow().overworldSpawn();
+        level.getChunk(base.getX() >> 4, base.getZ() >> 4);
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
+        player.teleportTo(level, base.getX() + 0.5, y, base.getZ() + 0.5,
+                Set.<RelativeMovement>of(), player.getYRot(), player.getXRot());
+    }
+
+    public static void returnToLobby(ServerPlayer player) {
+        ServerLevel lobby = player.getServer().overworld();
+        var base = lobby.getSharedSpawnPos();
+        lobby.getChunk(base.getX() >> 4, base.getZ() >> 4);
+        int y = lobby.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
+        player.teleportTo(lobby, base.getX() + 0.5, y, base.getZ() + 0.5,
+                Set.<RelativeMovement>of(), player.getYRot(), player.getXRot());
+    }
+
+    public static void finish(MinecraftServer server) {
+        active().ifPresent(group -> {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                if (group.levels().contains(player.serverLevel())) {
+                    returnToLobby(player);
+                }
+            }
+            unload(server);
+        });
+    }
+
+    public static synchronized void unload(MinecraftServer server) {
+        MatchWorldGroup group = active;
+        if (group == null) {
+            return;
+        }
+        if (group.levels().stream().anyMatch(level -> !level.players().isEmpty())) {
+            throw new IllegalStateException("比赛世界中仍有玩家，不能卸载");
+        }
+        for (ServerLevel level : group.levels().reversed()) {
+            server.forgeGetWorldMap().remove(level.dimension());
+            server.markWorldsDirty();
+            level.save(null, true, false);
+            NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
+            try {
+                level.close();
+            } catch (IOException exception) {
+                throw new IllegalStateException("无法关闭比赛世界 " + level.dimension().location(), exception);
+            }
+        }
+        active = null;
+        NeoBingo.LOGGER.info("已卸载运行时比赛世界组：{}", group.matchId());
+    }
+
+    private static ServerLevel createLevel(
+            MinecraftServer server,
+            ResourceKey<Level> levelKey,
+            ResourceKey<LevelStem> stemKey,
+            boolean tickTime) {
+        LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).getOrThrow(stemKey);
+        var data = new DerivedLevelData(server.getWorldData(), server.getWorldData().overworldData());
+        var listener = LoggerChunkProgressListener.createCompleted();
+        ServerLevel level = new ServerLevel(
+                server,
+                server.executor,
+                server.storageSource,
+                data,
+                levelKey,
+                stem,
+                listener,
+                server.getWorldData().isDebugWorld(),
+                BiomeManager.obfuscateSeed(server.getWorldData().worldGenOptions().seed()),
+                ImmutableList.of(),
+                tickTime,
+                server.overworld().getRandomSequences());
+        server.overworld().getWorldBorder().addListener(
+                new BorderChangeListener.DelegateBorderChangeListener(level.getWorldBorder()));
+        server.forgeGetWorldMap().put(levelKey, level);
+        server.markWorldsDirty();
+        NeoForge.EVENT_BUS.post(new LevelEvent.Load(level));
+        return level;
+    }
+
+    private static ResourceKey<Level> levelKey(String path) {
+        return ResourceKey.create(
+                Registries.DIMENSION,
+                ResourceLocation.fromNamespaceAndPath(NeoBingo.MOD_ID, path));
+    }
+}

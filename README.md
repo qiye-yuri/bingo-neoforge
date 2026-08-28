@@ -34,6 +34,8 @@ Both the HUD and full card show the current team score. Ranked mode also shows s
 
 On login, each player receives a vanilla interactive Bingo settings book for choosing a team, game mode, and MAX-to-D difficulty. It also includes random teams and a clickable chat-based administrator panel for assigning or removing online players, rerolling the card, and ending a game. Team assignments color player names in the vanilla Tab list. Existing books are not duplicated, outdated copies are upgraded, and reconnecting or running `/neobingo book` replaces a lost copy.
 
+Starting through the command system creates a match-exclusive overworld, Nether, and End group without restarting the server, then moves joined players to a fresh seed-selected region. Nether and End portals are routed within that group. Ending the game, winning, or reaching the ranked timeout returns players to the lobby and saves, unregisters, and closes the three runtime levels.
+
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
 
 ## Build

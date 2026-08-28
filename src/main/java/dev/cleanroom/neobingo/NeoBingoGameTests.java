@@ -10,6 +10,7 @@ import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.world.RuntimeMatchWorldManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -220,6 +221,20 @@ public final class NeoBingoGameTests {
                 running.roster().teamOf(playerId).orElseThrow(), randomizedPlayerTeam, "开局后应保留随机分队结果");
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
         helper.assertValueEqual(running.seed().orElseThrow(), 43L, "开局应沿用大厅中预生成棋盘的种子");
+        var matchWorlds = RuntimeMatchWorldManager.active().orElseThrow();
+        helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
+        helper.assertTrue(
+                RuntimeMatchWorldManager.portalTarget(matchWorlds.overworld(), net.minecraft.world.level.Level.NETHER)
+                        .orElseThrow() == matchWorlds.nether(),
+                "比赛主世界的下界传送门应进入比赛下界");
+        helper.assertTrue(
+                RuntimeMatchWorldManager.portalTarget(matchWorlds.overworld(), net.minecraft.world.level.Level.END)
+                        .orElseThrow() == matchWorlds.end(),
+                "比赛主世界的末地传送门应进入比赛末地");
+        helper.assertTrue(
+                RuntimeMatchWorldManager.portalTarget(matchWorlds.nether(), net.minecraft.world.level.Level.OVERWORLD)
+                        .orElseThrow() == matchWorlds.overworld(),
+                "比赛下界的返回传送门应回到比赛主世界");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo reroll");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().seed().orElseThrow(), 43L, "游戏过程中不得刷新棋盘");
@@ -229,6 +244,8 @@ public final class NeoBingoGameTests {
                 data.restoreSession().orElseThrow().state(),
                 SessionState.FINISHED,
                 "结束命令应持久化已结束状态");
+        helper.assertTrue(RuntimeMatchWorldManager.active().isEmpty(), "结束游戏后应卸载比赛世界组");
+        helper.assertTrue(player.serverLevel() == server.overworld(), "结束游戏后应将玩家送回大厅主世界");
         data.clear();
         helper.succeed();
     }

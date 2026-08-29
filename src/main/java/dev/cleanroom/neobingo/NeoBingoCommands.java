@@ -24,12 +24,15 @@ import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
 import dev.cleanroom.neobingo.world.RuntimeMatchWorldManager;
+import dev.cleanroom.neobingo.world.MatchGameplayRules;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -57,6 +60,9 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("book")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> giveBook(context.getSource()))))
+                .then(Commands.literal("teamchest")
+                        .requires(NeoBingoPermissions::canPlay)
+                        .executes(context -> run(context.getSource(), () -> openTeamChest(context.getSource()))))
                 .then(Commands.literal("randomteams")
                         .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> randomizeTeams(context.getSource(), 2)))
@@ -158,7 +164,17 @@ public final class NeoBingoCommands {
                         .then(Commands.argument("delta_chunks", IntegerArgumentType.integer(-128, 128))
                                 .executes(context -> run(context.getSource(), () -> adjustSpawnDistance(
                                         context.getSource(),
-                                        IntegerArgumentType.getInteger(context, "delta_chunks"))))));
+                                        IntegerArgumentType.getInteger(context, "delta_chunks"))))))
+                .then(Commands.literal("toggle")
+                        .then(Commands.argument("rule", StringArgumentType.word())
+                                .executes(context -> run(context.getSource(), () -> toggleLobbyRule(
+                                        context.getSource(), StringArgumentType.getString(context, "rule"))))))
+                .then(Commands.literal("kit")
+                        .then(Commands.argument("item", ResourceLocationArgument.id())
+                                .then(Commands.argument("delta", IntegerArgumentType.integer(-64, 64))
+                                        .executes(context -> run(context.getSource(), () -> adjustStarterItem(
+                                                context.getSource(), ResourceLocationArgument.getId(context, "item"),
+                                                IntegerArgumentType.getInteger(context, "delta")))))));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> lobbyMode(String name, GameMode mode) {
@@ -191,7 +207,13 @@ public final class NeoBingoCommands {
                 settings.count(DifficultyTier.MAX), settings.count(DifficultyTier.S),
                 settings.count(DifficultyTier.A), settings.count(DifficultyTier.B),
                 settings.count(DifficultyTier.C), settings.count(DifficultyTier.D), settings.total(),
-                settings.timedSeconds() / 60, settings.teamSpawnDistanceChunks()), false);
+                settings.timedSeconds() / 60, settings.teamSpawnDistanceChunks(),
+                settingState(settings.nightVision()), settingState(settings.keepInventory()),
+                settingState(settings.teamChest())), false);
+    }
+
+    private static Component settingState(boolean enabled) {
+        return Component.translatable(enabled ? "book.neo_bingo.enabled" : "book.neo_bingo.disabled");
     }
 
     private static void adjustTimedSeconds(CommandSourceStack source, int deltaSeconds) {
@@ -208,6 +230,38 @@ public final class NeoBingoCommands {
         data.lobbySettings().adjustTeamSpawnDistanceChunks(deltaChunks);
         data.lobbySettingsChanged();
         showLobbySettings(source);
+    }
+
+    private static void toggleLobbyRule(CommandSourceStack source, String rule) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        switch (rule) {
+            case "night_vision" -> data.lobbySettings().toggleNightVision();
+            case "keep_inventory" -> data.lobbySettings().toggleKeepInventory();
+            case "team_chest" -> data.lobbySettings().toggleTeamChest();
+            default -> throw failure("commands.neo_bingo.error.invalid_request");
+        }
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
+    }
+
+    private static void adjustStarterItem(CommandSourceStack source, ResourceLocation id, int delta) {
+        if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id))
+            throw failure("commands.neo_bingo.error.invalid_request");
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        int count = data.lobbySettings().adjustStarterItem(id.toString(), delta);
+        data.lobbySettingsChanged();
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.lobby.kit", id.toString(), count), false);
+    }
+
+    private static void openTeamChest(CommandSourceStack source) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        BingoSession session = requiredSession(NeoBingoSavedData.get(source.getServer()));
+        if (session.state() != SessionState.RUNNING) throw failure("commands.neo_bingo.error.not_started");
+        TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
+                .orElseThrow(() -> failure("commands.neo_bingo.error.not_joined"));
+        MatchGameplayRules.openTeamChest(player, team);
     }
 
     private static void previewLobbyCard(CommandSourceStack source) {
@@ -570,10 +624,14 @@ public final class NeoBingoCommands {
         int spawnDistance = NeoBingoSavedData.get(source.getServer()).lobbySettings().teamSpawnDistanceChunks();
         RuntimeMatchWorldManager.create(
                 source.getServer(), session.seed().orElseThrow(), session.roster().teamSizes().keySet(), spawnDistance);
+        MatchGameplayRules.begin(source.getServer());
         try {
             for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
                 session.roster().teamOf(new PlayerId(player.getUUID()))
-                        .ifPresent(team -> RuntimeMatchWorldManager.sendToMatch(player, team));
+                        .ifPresent(team -> {
+                            RuntimeMatchWorldManager.sendToMatch(player, team);
+                            MatchGameplayRules.preparePlayer(player, team);
+                        });
             }
         } catch (RuntimeException exception) {
             RuntimeMatchWorldManager.finish(source.getServer());

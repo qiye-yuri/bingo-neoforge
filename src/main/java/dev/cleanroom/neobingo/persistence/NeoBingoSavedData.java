@@ -63,6 +63,12 @@ public final class NeoBingoSavedData extends SavedData {
         settingsTag.putString("mode", lobbySettings.mode().name());
         settingsTag.putInt("timed_seconds", lobbySettings.timedSeconds());
         settingsTag.putInt("team_spawn_distance_chunks", lobbySettings.teamSpawnDistanceChunks());
+        settingsTag.putBoolean("night_vision", lobbySettings.nightVision());
+        settingsTag.putBoolean("keep_inventory", lobbySettings.keepInventory());
+        settingsTag.putBoolean("team_chest", lobbySettings.teamChest());
+        CompoundTag kitTag = new CompoundTag();
+        lobbySettings.starterItems().forEach(kitTag::putInt);
+        settingsTag.put("starter_items", kitTag);
         for (DifficultyTier tier : DifficultyTier.values()) {
             settingsTag.putInt(tier.name().toLowerCase(), lobbySettings.count(tier));
         }
@@ -82,12 +88,19 @@ public final class NeoBingoSavedData extends SavedData {
                 counts.put(tier, settingsTag.getInt(tier.name().toLowerCase()));
             }
             try {
+                java.util.Map<String, Integer> starterItems = new java.util.LinkedHashMap<>();
+                CompoundTag kitTag = settingsTag.getCompound("starter_items");
+                for (String key : kitTag.getAllKeys()) starterItems.put(key, kitTag.getInt(key));
                 data.lobbySettings = new LobbyGameSettings(
                         GameMode.valueOf(settingsTag.getString("mode")),
                         counts,
                         settingsTag.contains("timed_seconds") ? settingsTag.getInt("timed_seconds") : 900,
                         settingsTag.contains("team_spawn_distance_chunks")
-                                ? settingsTag.getInt("team_spawn_distance_chunks") : 8);
+                                ? settingsTag.getInt("team_spawn_distance_chunks") : 8,
+                        settingsTag.getBoolean("night_vision"),
+                        settingsTag.getBoolean("keep_inventory"),
+                        settingsTag.getBoolean("team_chest"),
+                        starterItems);
             } catch (IllegalArgumentException ignored) {
                 data.lobbySettings = new LobbyGameSettings();
             }

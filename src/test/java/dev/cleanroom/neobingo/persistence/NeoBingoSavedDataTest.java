@@ -35,6 +35,10 @@ class NeoBingoSavedDataTest {
         data.lobbySettings().adjust(DifficultyTier.D, -1);
         data.lobbySettings().adjustTimedSeconds(300);
         data.lobbySettings().adjustTeamSpawnDistanceChunks(4);
+        data.lobbySettings().toggleNightVision();
+        data.lobbySettings().toggleKeepInventory();
+        data.lobbySettings().toggleTeamChest();
+        data.lobbySettings().adjustStarterItem("minecraft:bread", 8);
         data.lobbySettingsChanged();
         assertTrue(data.isDirty());
 
@@ -46,6 +50,10 @@ class NeoBingoSavedDataTest {
         assertEquals(6, loaded.lobbySettings().count(DifficultyTier.D));
         assertEquals(1200, loaded.lobbySettings().timedSeconds());
         assertEquals(12, loaded.lobbySettings().teamSpawnDistanceChunks());
+        assertTrue(loaded.lobbySettings().nightVision());
+        assertTrue(loaded.lobbySettings().keepInventory());
+        assertTrue(loaded.lobbySettings().teamChest());
+        assertEquals(8, loaded.lobbySettings().starterItems().get("minecraft:bread"));
 
         loaded.clear();
         assertTrue(loaded.isDirty());

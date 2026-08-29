@@ -224,6 +224,12 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(data.lobbySettings().timedSeconds(), 960, "设置书命令应能调整计时时长");
         helper.assertValueEqual(data.lobbySettings().teamSpawnDistanceChunks(), 9,
                 "设置书命令应能按区块调整队伍复活点间距");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings toggle night_vision");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings toggle team_chest");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:bread 4");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
@@ -241,6 +247,14 @@ public final class NeoBingoGameTests {
         helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
         helper.assertValueEqual(player.getRespawnDimension(), matchWorlds.overworldKey(),
                 "比赛中死亡后应在本局主世界复活");
+        helper.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION),
+                "开启全员夜视后参赛玩家应获得夜视效果");
+        helper.assertTrue(player.getInventory().countItem(Items.BREAD) >= 4,
+                "开局时应向每名参赛玩家发放书中配置的初始物资");
+        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo teamchest");
+        helper.assertTrue(player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu,
+                "开启队伍箱后玩家应能打开共享六行箱子");
+        player.closeContainer();
         var firstSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(playerId).orElseThrow());
         var secondSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(secondPlayerId).orElseThrow());
         helper.assertValueEqual(Math.abs(firstSpawn.getX() - secondSpawn.getX())
@@ -272,7 +286,6 @@ public final class NeoBingoGameTests {
                 data.restoreSession().orElseThrow().state(),
                 SessionState.FINISHED,
                 "结束命令应持久化已结束状态");
-        helper.assertTrue(RuntimeMatchWorldManager.active().isEmpty(), "结束游戏后应卸载比赛世界组");
         helper.assertTrue(player.serverLevel() == server.overworld(), "结束游戏后应将玩家送回大厅主世界");
         helper.assertValueEqual(player.getRespawnDimension(), server.overworld().dimension(),
                 "结束游戏后应恢复大厅重生点");

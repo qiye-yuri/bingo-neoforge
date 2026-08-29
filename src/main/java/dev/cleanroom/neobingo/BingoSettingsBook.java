@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 8;
+    private static final int BOOK_VERSION = 9;
 
     private BingoSettingsBook() {
     }
@@ -95,6 +95,8 @@ public final class BingoSettingsBook {
                 .append("\n").append(button("book.neo_bingo.mode.ranked.short", "/neobingo lobby settings mode ranked")));
         pages.add(difficultyPage());
         pages.add(matchOptionsPage());
+        pages.add(ruleOptionsPage());
+        pages.add(starterKitPage());
         pages.add(Component.translatable("book.neo_bingo.lobby_card").withStyle(ChatFormatting.BOLD)
                 .append("\n\n").append(button("book.neo_bingo.action.settings", "/neobingo lobby settings"))
                 .append("\n").append(button("book.neo_bingo.action.preview", "/neobingo lobby preview"))
@@ -103,6 +105,8 @@ public final class BingoSettingsBook {
         pages.add(Component.translatable("book.neo_bingo.tools")
                 .append("\n\n")
                 .append(button("book.neo_bingo.action.claim", "/neobingo claim"))
+                .append("\n")
+                .append(button("book.neo_bingo.action.team_chest", "/neobingo teamchest"))
                 .append("\n")
                 .append(button("book.neo_bingo.action.status", "/neobingo status"))
                 .append("\n")
@@ -161,6 +165,32 @@ public final class BingoSettingsBook {
         page.append("\n\n").append(Component.translatable("book.neo_bingo.options_hint")
                 .withStyle(ChatFormatting.DARK_GRAY));
         return page;
+    }
+
+    private static Component ruleOptionsPage() {
+        return Component.translatable("book.neo_bingo.rule_options").withStyle(ChatFormatting.BOLD)
+                .append("\n\n").append(button("book.neo_bingo.rule.night_vision", "/neobingo lobby settings toggle night_vision"))
+                .append("\n\n").append(button("book.neo_bingo.rule.keep_inventory", "/neobingo lobby settings toggle keep_inventory"))
+                .append("\n\n").append(button("book.neo_bingo.rule.team_chest", "/neobingo lobby settings toggle team_chest"))
+                .append("\n\n").append(Component.translatable("book.neo_bingo.rule_hint").withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    private static Component starterKitPage() {
+        MutableComponent page = Component.translatable("book.neo_bingo.starter_kit").withStyle(ChatFormatting.BOLD);
+        appendKitRow(page, "item.minecraft.bread", "minecraft:bread", 4);
+        appendKitRow(page, "block.minecraft.oak_log", "minecraft:oak_log", 8);
+        appendKitRow(page, "block.minecraft.cobblestone", "minecraft:cobblestone", 16);
+        appendKitRow(page, "block.minecraft.torch", "minecraft:torch", 8);
+        appendKitRow(page, "item.minecraft.iron_ingot", "minecraft:iron_ingot", 4);
+        appendKitRow(page, "item.minecraft.cooked_beef", "minecraft:cooked_beef", 4);
+        return page;
+    }
+
+    private static void appendKitRow(MutableComponent page, String nameKey, String item, int step) {
+        String prefix = "/neobingo lobby settings kit " + item + " ";
+        page.append("\n").append(Component.translatable(nameKey).append(" "))
+                .append(literalButton("−", prefix + -step)).append(" ")
+                .append(literalButton("+", prefix + step));
     }
 
     private static Component button(String translationKey, String command) {

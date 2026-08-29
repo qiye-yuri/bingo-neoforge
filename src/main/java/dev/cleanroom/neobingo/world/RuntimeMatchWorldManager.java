@@ -44,6 +44,10 @@ public final class RuntimeMatchWorldManager {
         if (active == null || !active.levels().contains(source)) {
             return Optional.empty();
         }
+        // 原版用固定维度键判断返回方向；运行时维度键不同，必须按实例识别。
+        if (source == active.nether() || source == active.end()) {
+            return Optional.of(active.overworld());
+        }
         if (vanillaTarget == Level.NETHER) {
             return Optional.of(active.nether());
         }
@@ -85,10 +89,14 @@ public final class RuntimeMatchWorldManager {
     }
 
     public static void sendToMatch(ServerPlayer player) {
-        ServerLevel level = active().orElseThrow(() -> new IllegalStateException("比赛世界尚未创建")).overworld();
-        var base = active().orElseThrow().overworldSpawn();
+        MatchWorldGroup group = active().orElseThrow(() -> new IllegalStateException("比赛世界尚未创建"));
+        ServerLevel level = group.overworld();
+        var base = group.overworldSpawn();
         level.getChunk(base.getX() >> 4, base.getZ() >> 4);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
+        // 强制将个人重生点绑定到本局主世界，死亡后不会回到大厅。
+        player.setRespawnPosition(group.overworldKey(), new net.minecraft.core.BlockPos(base.getX(), y, base.getZ()),
+                player.getYRot(), true, false);
         player.teleportTo(level, base.getX() + 0.5, y, base.getZ() + 0.5,
                 Set.<RelativeMovement>of(), player.getYRot(), player.getXRot());
     }
@@ -98,6 +106,9 @@ public final class RuntimeMatchWorldManager {
         var base = lobby.getSharedSpawnPos();
         lobby.getChunk(base.getX() >> 4, base.getZ() >> 4);
         int y = lobby.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
+        // 对局结束后恢复大厅重生点，避免下一次死亡引用已卸载的比赛维度。
+        player.setRespawnPosition(lobby.dimension(), new net.minecraft.core.BlockPos(base.getX(), y, base.getZ()),
+                player.getYRot(), true, false);
         player.teleportTo(lobby, base.getX() + 0.5, y, base.getZ() + 0.5,
                 Set.<RelativeMovement>of(), player.getYRot(), player.getXRot());
     }

@@ -232,6 +232,8 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(running.seed().orElseThrow(), previewSeed, "开局应沿用大厅中预览棋盘的种子");
         var matchWorlds = RuntimeMatchWorldManager.active().orElseThrow();
         helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
+        helper.assertValueEqual(player.getRespawnDimension(), matchWorlds.overworldKey(),
+                "比赛中死亡后应在本局主世界复活");
         helper.assertTrue(
                 RuntimeMatchWorldManager.portalTarget(matchWorlds.overworld(), net.minecraft.world.level.Level.NETHER)
                         .orElseThrow() == matchWorlds.nether(),
@@ -241,9 +243,9 @@ public final class NeoBingoGameTests {
                         .orElseThrow() == matchWorlds.end(),
                 "比赛主世界的末地传送门应进入比赛末地");
         helper.assertTrue(
-                RuntimeMatchWorldManager.portalTarget(matchWorlds.nether(), net.minecraft.world.level.Level.OVERWORLD)
+                RuntimeMatchWorldManager.portalTarget(matchWorlds.nether(), net.minecraft.world.level.Level.NETHER)
                         .orElseThrow() == matchWorlds.overworld(),
-                "比赛下界的返回传送门应回到比赛主世界");
+                "即使原版误判目标键，比赛下界的返回门也应回到比赛主世界");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo reroll");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().seed().orElseThrow(), previewSeed, "游戏过程中不得刷新棋盘");
@@ -255,6 +257,8 @@ public final class NeoBingoGameTests {
                 "结束命令应持久化已结束状态");
         helper.assertTrue(RuntimeMatchWorldManager.active().isEmpty(), "结束游戏后应卸载比赛世界组");
         helper.assertTrue(player.serverLevel() == server.overworld(), "结束游戏后应将玩家送回大厅主世界");
+        helper.assertValueEqual(player.getRespawnDimension(), server.overworld().dimension(),
+                "结束游戏后应恢复大厅重生点");
         data.clear();
         helper.succeed();
     }

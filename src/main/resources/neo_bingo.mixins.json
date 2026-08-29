@@ -7,6 +7,9 @@
     "EndPortalBlockMixin",
     "NetherPortalBlockMixin"
   ],
+  "client": [
+    "BookViewScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

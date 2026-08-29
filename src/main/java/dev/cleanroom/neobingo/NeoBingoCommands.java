@@ -12,7 +12,6 @@ import dev.cleanroom.neobingo.application.ClaimBatchResult;
 import dev.cleanroom.neobingo.application.ObjectiveClaimService;
 import dev.cleanroom.neobingo.config.BingoCardDefinition;
 import dev.cleanroom.neobingo.config.BingoCardDefinitions;
-import dev.cleanroom.neobingo.domain.BingoGame;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.DifficultyTier;
 import dev.cleanroom.neobingo.domain.DifficultyDistribution;
@@ -23,7 +22,6 @@ import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
-import dev.cleanroom.neobingo.presentation.BingoCardTextRenderer;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
 import dev.cleanroom.neobingo.world.RuntimeMatchWorldManager;
 import net.minecraft.commands.CommandSourceStack;
@@ -138,9 +136,6 @@ public final class NeoBingoCommands {
                                         context.getSource(),
                                         context.getSource().getLevel().getRandom().nextLong(),
                                         distribution(context)))))))
-                .then(Commands.literal("card")
-                        .requires(NeoBingoPermissions::canPlay)
-                        .executes(context -> run(context.getSource(), () -> showCard(context.getSource()))))
                 .then(Commands.literal("claim")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> claim(context.getSource()))))
@@ -528,21 +523,6 @@ public final class NeoBingoCommands {
         }
         if (session.roster().teamOf(new PlayerId(player.getUUID())).isEmpty()) {
             throw failure("commands.neo_bingo.error.start_permission");
-        }
-    }
-
-    private static void showCard(CommandSourceStack source) throws Exception {
-        ServerPlayer player = source.getPlayerOrException();
-        BingoSession session = requiredSession(NeoBingoSavedData.get(source.getServer()));
-        BingoGame game = session.game().orElseThrow(() -> failure("commands.neo_bingo.error.not_started"));
-        TeamId team = session.roster().teamOf(new PlayerId(player.getUUID()))
-                .orElseThrow(() -> failure("commands.neo_bingo.error.not_joined"));
-
-        NeoBingoNetwork.sendCardIfSupported(player, session, team);
-
-        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.card.title", team.value()), false);
-        for (String line : BingoCardTextRenderer.render(game, team)) {
-            source.sendSuccess(() -> Component.literal(line), false);
         }
     }
 

@@ -115,9 +115,6 @@ public final class ClientBingoHud {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        while (ClientKeyMappings.OPEN_CARD.consumeClick()) {
-            ClientProtocolState.latestCard().ifPresent(card -> minecraft.setScreen(new BingoCardScreen(card)));
-        }
         while (ClientKeyMappings.TOGGLE_HUD.consumeClick()) {
             ClientProtocolState.toggleHud();
         }

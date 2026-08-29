@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 6;
+    private static final int BOOK_VERSION = 7;
 
     private BingoSettingsBook() {
     }
@@ -93,22 +93,14 @@ public final class BingoSettingsBook {
                 .append("\n").append(button("book.neo_bingo.mode.lockout", "/neobingo lobby settings mode lockout"))
                 .append("\n").append(button("book.neo_bingo.mode.hidden", "/neobingo lobby settings mode hidden"))
                 .append("\n").append(button("book.neo_bingo.mode.ranked.short", "/neobingo lobby settings mode ranked")));
-        pages.add(difficultyPage("max"));
-        pages.add(difficultyPage("s"));
-        pages.add(difficultyPage("a"));
-        pages.add(difficultyPage("b"));
-        pages.add(difficultyPage("c"));
-        pages.add(difficultyPage("d"));
+        pages.add(difficultyPage());
         pages.add(Component.translatable("book.neo_bingo.lobby_card").withStyle(ChatFormatting.BOLD)
                 .append("\n\n").append(button("book.neo_bingo.action.settings", "/neobingo lobby settings"))
                 .append("\n").append(button("book.neo_bingo.action.preview", "/neobingo lobby preview"))
-                .append("\n").append(button("book.neo_bingo.action.card", "/neobingo card"))
                 .append("\n").append(button("book.neo_bingo.action.refresh", "/neobingo lobby refresh"))
                 .append("\n\n").append(button("book.neo_bingo.action.start", "/neobingo lobby start")));
         pages.add(Component.translatable("book.neo_bingo.tools")
                 .append("\n\n")
-                .append(button("book.neo_bingo.action.card", "/neobingo card"))
-                .append("\n")
                 .append(button("book.neo_bingo.action.claim", "/neobingo claim"))
                 .append("\n")
                 .append(button("book.neo_bingo.action.status", "/neobingo status"))
@@ -136,15 +128,17 @@ public final class BingoSettingsBook {
         return List.copyOf(pages);
     }
 
-    /** 每个难度单独一页，通过增减按钮精确设置格子数量。 */
-    private static Component difficultyPage(String tier) {
-        MutableComponent page = Component.translatable("book.neo_bingo.difficulty_editor", tier.toUpperCase())
+    /** 六档数量集中在同一页，每次点击精确增减一个格子。 */
+    private static Component difficultyPage() {
+        MutableComponent page = Component.translatable("book.neo_bingo.difficulty_editor_all")
                 .withStyle(ChatFormatting.BOLD);
-        String prefix = "/neobingo lobby settings adjust " + tier + " ";
-        page.append("\n\n").append(button("book.neo_bingo.adjust.minus_five", prefix + "-5"));
-        page.append("\n").append(button("book.neo_bingo.adjust.minus_one", prefix + "-1"));
-        page.append("\n").append(button("book.neo_bingo.adjust.plus_one", prefix + "1"));
-        page.append("\n").append(button("book.neo_bingo.adjust.plus_five", prefix + "5"));
+        for (String tier : List.of("max", "s", "a", "b", "c", "d")) {
+            String prefix = "/neobingo lobby settings adjust " + tier + " ";
+            page.append("\n").append(Component.literal(tier.toUpperCase() + " "))
+                    .append(literalButton("−", prefix + "-1"))
+                    .append(" ")
+                    .append(literalButton("+", prefix + "1"));
+        }
         page.append("\n\n").append(Component.translatable("book.neo_bingo.adjust.hint")
                 .withStyle(ChatFormatting.DARK_GRAY));
         return page;
@@ -156,6 +150,13 @@ public final class BingoSettingsBook {
                 .append(" ]")
                 .withStyle(style -> style
                         .withColor(ChatFormatting.DARK_GREEN)
+                        .withUnderlined(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
+    }
+
+    private static Component literalButton(String label, String command) {
+        return Component.literal("[" + label + "]")
+                .withStyle(style -> style.withColor(ChatFormatting.DARK_GREEN)
                         .withUnderlined(true)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
     }

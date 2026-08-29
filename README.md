@@ -34,7 +34,7 @@ Both the HUD and full card show the current team score. Ranked mode also shows s
 
 On login, each player receives a vanilla interactive Bingo settings book for choosing a team, game mode, and MAX-to-D difficulty. It also includes random teams and a clickable chat-based administrator panel for assigning or removing online players, rerolling the card, and ending a game. Team assignments color player names in the vanilla Tab list. Existing books are not duplicated, outdated copies are upgraded, and reconnecting or running `/neobingo book` replaces a lost copy.
 
-The book now uses exact per-tier counts instead of fixed difficulty presets. Administrators can adjust MAX, S, A, B, C, and D independently; when the total is 25, the upcoming card can be generated, viewed, refreshed, and started from the lobby. Refreshing remains unavailable after a game starts.
+The book now places all six exact tier counts on one page. Each click changes one item without leaving the current book page; when the total is 25, the upcoming card can be generated, refreshed, and started from the lobby. Refreshing remains unavailable after a game starts, and the separate full-card screen and `/neobingo card` command have been removed.
 
 Starting through the command system creates a match-exclusive overworld, Nether, and End group without restarting the server, then moves joined players to a fresh seed-selected region. Nether and End portals are routed within that group. Ending the game, winning, or reaching the ranked timeout returns players to the lobby and saves, unregisters, and closes the three runtime levels.
 
@@ -82,7 +82,6 @@ Run loader-aware integration tests with:
 - `/neobingo reroll [seed]` prepares or refreshes the next card in the lobby; rerolling is forbidden after the game starts (operator only).
 - `/neobingo reroll mix <MAX> <S> <A> <B> <C> <D>` refreshes with exact per-tier counts; all six counts must total 25.
 - `/neobingo start <mode> mix <MAX> <S> <A> <B> <C> <D>` starts with exact per-tier item counts totaling 25.
-- `/neobingo card` displays the team's card in vanilla chat.
 - `/neobingo claim` immediately checks the player's server-side inventory and claims matching objectives.
 - `/neobingo status` displays the current lifecycle, mode, seed, teams, and winner.
 - `/neobingo end` ends the running game (operator only).

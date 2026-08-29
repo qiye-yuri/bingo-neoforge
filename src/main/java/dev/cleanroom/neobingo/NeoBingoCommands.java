@@ -21,6 +21,7 @@ import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.persistence.StarterKitSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
 import dev.cleanroom.neobingo.presentation.BingoModeText;
 import dev.cleanroom.neobingo.world.RuntimeMatchWorldManager;
@@ -36,6 +37,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 import java.util.List;
@@ -174,6 +178,11 @@ public final class NeoBingoCommands {
                                 .executes(context -> run(context.getSource(), () -> toggleLobbyRule(
                                         context.getSource(), StringArgumentType.getString(context, "rule"))))))
                 .then(Commands.literal("kit")
+                        .executes(context -> run(context.getSource(), () -> openStarterKit(
+                                context.getSource())))
+                        .then(Commands.literal("open")
+                                .executes(context -> run(context.getSource(), () -> openStarterKit(
+                                        context.getSource()))))
                         .then(Commands.literal("clear")
                                 .executes(context -> run(context.getSource(), () -> clearStarterItems(
                                         context.getSource()))))
@@ -285,8 +294,26 @@ public final class NeoBingoCommands {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         requireLobby(data);
         data.lobbySettings().clearStarterItems();
+        StarterKitSavedData.get(source.getServer()).clear();
         data.lobbySettingsChanged();
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.lobby.kit.cleared"), false);
+    }
+
+    private static void openStarterKit(CommandSourceStack source) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        StarterKitSavedData starterKit = StarterKitSavedData.get(source.getServer());
+        if (!data.lobbySettings().starterItems().isEmpty()) {
+            starterKit.importLegacy(data.lobbySettings().starterItems());
+            data.lobbySettings().clearStarterItems();
+            data.lobbySettingsChanged();
+        }
+        var inventory = starterKit.inventory();
+        player.openMenu(new SimpleMenuProvider(
+                (id, playerInventory, ignored) -> new ChestMenu(
+                        MenuType.GENERIC_9x4, id, playerInventory, inventory, 4),
+                Component.translatable("screen.neo_bingo.starter_kit")));
     }
 
     private static void openTeamChest(CommandSourceStack source) throws Exception {

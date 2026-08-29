@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 11;
+    private static final int BOOK_VERSION = 12;
 
     private BingoSettingsBook() {
     }
@@ -180,27 +180,10 @@ public final class BingoSettingsBook {
 
     private static Component starterKitPage() {
         MutableComponent page = Component.translatable("book.neo_bingo.starter_kit").withStyle(ChatFormatting.BOLD);
-        page.append("\n").append(Component.translatable("book.neo_bingo.starter_kit.held"));
-        page.append("\n").append(literalButton("−8", "/neobingo lobby settings kit held -8"))
-                .append(" ").append(literalButton("−1", "/neobingo lobby settings kit held -1"))
-                .append(" ").append(literalButton("+1", "/neobingo lobby settings kit held 1"))
-                .append(" ").append(literalButton("+8", "/neobingo lobby settings kit held 8"));
-        page.append("\n").append(button("book.neo_bingo.starter_kit.clear",
-                "/neobingo lobby settings kit clear"));
-        appendKitRow(page, "item.minecraft.bread", "minecraft:bread", 4);
-        appendKitRow(page, "block.minecraft.oak_log", "minecraft:oak_log", 8);
-        appendKitRow(page, "block.minecraft.cobblestone", "minecraft:cobblestone", 16);
-        appendKitRow(page, "block.minecraft.torch", "minecraft:torch", 8);
-        appendKitRow(page, "item.minecraft.iron_ingot", "minecraft:iron_ingot", 4);
-        appendKitRow(page, "item.minecraft.cooked_beef", "minecraft:cooked_beef", 4);
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.starter_kit.inventory_hint"));
+        page.append("\n\n").append(button("book.neo_bingo.starter_kit.open",
+                "/neobingo lobby settings kit open"));
         return page;
-    }
-
-    private static void appendKitRow(MutableComponent page, String nameKey, String item, int step) {
-        String prefix = "/neobingo lobby settings kit " + item + " ";
-        page.append("\n").append(Component.translatable(nameKey).append(" "))
-                .append(literalButton("−", prefix + -step)).append(" ")
-                .append(literalButton("+", prefix + step));
     }
 
     private static Component button(String translationKey, String command) {

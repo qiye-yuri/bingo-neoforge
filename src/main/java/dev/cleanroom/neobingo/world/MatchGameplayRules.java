@@ -3,6 +3,7 @@ package dev.cleanroom.neobingo.world;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
+import dev.cleanroom.neobingo.persistence.StarterKitSavedData;
 import dev.cleanroom.neobingo.persistence.TeamChestSavedData;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,6 +23,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,7 +36,7 @@ public final class MatchGameplayRules {
     private static boolean keepInventory;
     private static boolean teamChest;
     private static int teamChestRows = 3;
-    private static Map<String, Integer> starterItems = Map.of();
+    private static List<ItemStack> starterItems = List.of();
     private static final Map<UUID, SavedInventory> DEATH_INVENTORIES = new java.util.HashMap<>();
 
     private MatchGameplayRules() {}
@@ -45,7 +47,13 @@ public final class MatchGameplayRules {
         keepInventory = settings.keepInventory();
         teamChest = settings.teamChest();
         teamChestRows = settings.teamChestRows();
-        starterItems = settings.starterItems();
+        StarterKitSavedData starterKit = StarterKitSavedData.get(server);
+        if (!settings.starterItems().isEmpty()) {
+            starterKit.importLegacy(settings.starterItems());
+            settings.clearStarterItems();
+            NeoBingoSavedData.get(server).lobbySettingsChanged();
+        }
+        starterItems = starterKit.snapshot();
         TeamChestSavedData.get(server).clearAll();
         DEATH_INVENTORIES.clear();
         if (nightVision) for (ServerPlayer player : server.getPlayerList().getPlayers())
@@ -56,8 +64,8 @@ public final class MatchGameplayRules {
         if (nightVision) {
             player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, -1, 0, false, false, true));
         }
-        starterItems.forEach((id, count) -> BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id))
-                .ifPresent(item -> player.getInventory().add(new ItemStack(item, count))));
+        starterItems.stream().filter(stack -> !stack.isEmpty())
+                .forEach(stack -> player.getInventory().placeItemBackInInventory(stack.copy()));
         if (teamChest) TeamChestSavedData.get(player.getServer()).inventory(team, teamChestRows);
     }
 
@@ -116,7 +124,7 @@ public final class MatchGameplayRules {
     public static void end(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) player.removeEffect(MobEffects.NIGHT_VISION);
         nightVision = keepInventory = teamChest = false;
-        starterItems = Map.of();
+        starterItems = List.of();
         DEATH_INVENTORIES.clear();
     }
 

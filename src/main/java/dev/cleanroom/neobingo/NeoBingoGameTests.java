@@ -230,12 +230,10 @@ public final class NeoBingoGameTests {
                 server.createCommandSourceStack(), "neobingo lobby settings toggle team_chest");
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo lobby settings team_chest_rows 1");
-        server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:bread 4");
-        server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:cobblestone 8");
-        helper.assertValueEqual(data.lobbySettings().starterItems().get("minecraft:cobblestone"), 8,
-                "初始物资命令应支持任意已注册物品");
+        var starterInventory = dev.cleanroom.neobingo.persistence.StarterKitSavedData.get(server).inventory();
+        starterInventory.clearContent();
+        starterInventory.setItem(0, new net.minecraft.world.item.ItemStack(Items.BREAD, 4));
+        starterInventory.setItem(1, new net.minecraft.world.item.ItemStack(Items.COBBLESTONE, 8));
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
@@ -259,7 +257,7 @@ public final class NeoBingoGameTests {
         helper.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION),
                 "开启全员夜视后参赛玩家应获得夜视效果");
         helper.assertTrue(player.getInventory().countItem(Items.BREAD) >= 4,
-                "开局时应向每名参赛玩家发放书中配置的初始物资");
+                "开局时应向每名参赛玩家发放初始物资背包的完整副本");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo teamchest");
         helper.assertTrue(player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu,
                 "开启队伍箱后玩家应能打开共享箱子");

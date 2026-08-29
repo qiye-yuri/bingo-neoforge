@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.GameMode;
+import dev.cleanroom.neobingo.domain.DifficultyTier;
 import dev.cleanroom.neobingo.domain.ObjectiveId;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.TeamId;
@@ -29,11 +30,18 @@ class NeoBingoSavedDataTest {
 
         NeoBingoSavedData data = new NeoBingoSavedData();
         data.store(session);
+        data.lobbySettings().mode(GameMode.HIDDEN);
+        data.lobbySettings().adjust(DifficultyTier.S, 1);
+        data.lobbySettings().adjust(DifficultyTier.D, -1);
+        data.lobbySettingsChanged();
         assertTrue(data.isDirty());
 
         CompoundTag encoded = data.save(new CompoundTag(), null);
         NeoBingoSavedData loaded = NeoBingoSavedData.load(encoded, null);
         assertEquals(session.snapshot(), loaded.restoreSession().orElseThrow().snapshot());
+        assertEquals(GameMode.HIDDEN, loaded.lobbySettings().mode());
+        assertEquals(4, loaded.lobbySettings().count(DifficultyTier.S));
+        assertEquals(6, loaded.lobbySettings().count(DifficultyTier.D));
 
         loaded.clear();
         assertTrue(loaded.isDirty());

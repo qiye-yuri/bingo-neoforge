@@ -21,8 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 5;
-    private static final int DEFAULT_RANKED_SECONDS = 900;
+    private static final int BOOK_VERSION = 6;
 
     private BingoSettingsBook() {
     }
@@ -89,10 +88,23 @@ public final class BingoSettingsBook {
                 .append(button("book.neo_bingo.team.green", "/neobingo join green"))
                 .append("\n")
                 .append(button("book.neo_bingo.team.yellow", "/neobingo join yellow")));
-        pages.add(modePage("book.neo_bingo.mode.standard", "standard"));
-        pages.add(modePage("book.neo_bingo.mode.lockout", "lockout"));
-        pages.add(modePage("book.neo_bingo.mode.hidden", "hidden"));
-        pages.add(rankedPage());
+        pages.add(Component.translatable("book.neo_bingo.mode.title").withStyle(ChatFormatting.BOLD)
+                .append("\n\n").append(button("book.neo_bingo.mode.standard", "/neobingo lobby settings mode standard"))
+                .append("\n").append(button("book.neo_bingo.mode.lockout", "/neobingo lobby settings mode lockout"))
+                .append("\n").append(button("book.neo_bingo.mode.hidden", "/neobingo lobby settings mode hidden"))
+                .append("\n").append(button("book.neo_bingo.mode.ranked.short", "/neobingo lobby settings mode ranked")));
+        pages.add(difficultyPage("max"));
+        pages.add(difficultyPage("s"));
+        pages.add(difficultyPage("a"));
+        pages.add(difficultyPage("b"));
+        pages.add(difficultyPage("c"));
+        pages.add(difficultyPage("d"));
+        pages.add(Component.translatable("book.neo_bingo.lobby_card").withStyle(ChatFormatting.BOLD)
+                .append("\n\n").append(button("book.neo_bingo.action.settings", "/neobingo lobby settings"))
+                .append("\n").append(button("book.neo_bingo.action.preview", "/neobingo lobby preview"))
+                .append("\n").append(button("book.neo_bingo.action.card", "/neobingo card"))
+                .append("\n").append(button("book.neo_bingo.action.refresh", "/neobingo lobby refresh"))
+                .append("\n\n").append(button("book.neo_bingo.action.start", "/neobingo lobby start")));
         pages.add(Component.translatable("book.neo_bingo.tools")
                 .append("\n\n")
                 .append(button("book.neo_bingo.action.card", "/neobingo card"))
@@ -124,28 +136,18 @@ public final class BingoSettingsBook {
         return List.copyOf(pages);
     }
 
-    private static Component modePage(String titleKey, String mode) {
-        MutableComponent page = Component.translatable(titleKey).withStyle(ChatFormatting.BOLD);
-        page.append("\n").append(Component.translatable("book.neo_bingo.choose_distribution"));
-        appendDistributionButtons(page, "/neobingo start " + mode + " mix ");
-        return page;
-    }
-
-    private static Component rankedPage() {
-        MutableComponent page = Component.translatable(
-                "book.neo_bingo.mode.ranked", DEFAULT_RANKED_SECONDS / 60).withStyle(ChatFormatting.BOLD);
-        page.append("\n").append(Component.translatable("book.neo_bingo.choose_distribution"));
-        appendDistributionButtons(page, "/neobingo start ranked " + DEFAULT_RANKED_SECONDS + " mix ");
-        return page;
-    }
-
-    /** 按 MAX、S、A、B、C、D 的顺序提供三组 25 格预设。 */
-    private static void appendDistributionButtons(MutableComponent page, String commandPrefix) {
-        page.append("\n").append(button("book.neo_bingo.distribution.balanced", commandPrefix + "0 3 4 5 6 7"));
-        page.append("\n").append(button("book.neo_bingo.distribution.hard", commandPrefix + "0 8 7 5 3 2"));
-        page.append("\n").append(button("book.neo_bingo.distribution.easy", commandPrefix + "0 1 2 4 8 10"));
-        page.append("\n\n").append(Component.translatable("book.neo_bingo.distribution.order")
+    /** 每个难度单独一页，通过增减按钮精确设置格子数量。 */
+    private static Component difficultyPage(String tier) {
+        MutableComponent page = Component.translatable("book.neo_bingo.difficulty_editor", tier.toUpperCase())
+                .withStyle(ChatFormatting.BOLD);
+        String prefix = "/neobingo lobby settings adjust " + tier + " ";
+        page.append("\n\n").append(button("book.neo_bingo.adjust.minus_five", prefix + "-5"));
+        page.append("\n").append(button("book.neo_bingo.adjust.minus_one", prefix + "-1"));
+        page.append("\n").append(button("book.neo_bingo.adjust.plus_one", prefix + "1"));
+        page.append("\n").append(button("book.neo_bingo.adjust.plus_five", prefix + "5"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.adjust.hint")
                 .withStyle(ChatFormatting.DARK_GRAY));
+        return page;
     }
 
     private static Component button(String translationKey, String command) {

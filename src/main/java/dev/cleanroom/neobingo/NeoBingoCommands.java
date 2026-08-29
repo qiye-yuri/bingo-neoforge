@@ -82,6 +82,28 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("manage")
                         .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> showTeamManager(context.getSource()))))
+                .then(Commands.literal("lobby")
+                        .requires(NeoBingoPermissions::canAdmin)
+                        .then(Commands.literal("settings")
+                                .executes(context -> run(context.getSource(), () -> showLobbySettings(context.getSource())))
+                                .then(Commands.literal("mode")
+                                        .then(lobbyMode("standard", GameMode.STANDARD))
+                                        .then(lobbyMode("lockout", GameMode.LOCKOUT))
+                                        .then(lobbyMode("hidden", GameMode.HIDDEN))
+                                        .then(lobbyMode("ranked", GameMode.RANKED)))
+                                .then(Commands.literal("adjust")
+                                        .then(Commands.argument("tier", StringArgumentType.word())
+                                                .then(Commands.argument("delta", IntegerArgumentType.integer(-25, 25))
+                                                        .executes(context -> run(context.getSource(), () -> adjustLobbyDifficulty(
+                                                                context.getSource(),
+                                                                StringArgumentType.getString(context, "tier"),
+                                                                IntegerArgumentType.getInteger(context, "delta"))))))))
+                        .then(Commands.literal("preview")
+                                .executes(context -> run(context.getSource(), () -> previewLobbyCard(context.getSource()))))
+                        .then(Commands.literal("refresh")
+                                .executes(context -> run(context.getSource(), () -> previewLobbyCard(context.getSource()))))
+                        .then(Commands.literal("start")
+                                .executes(context -> run(context.getSource(), () -> startConfigured(context.getSource())))))
                 .then(Commands.literal("start")
                         .requires(NeoBingoPermissions::canPlay)
                         .executes(context -> run(context.getSource(), () -> start(
@@ -128,6 +150,69 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("end")
                         .requires(NeoBingoPermissions::canAdmin)
                         .executes(context -> run(context.getSource(), () -> end(context.getSource())))));
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> lobbyMode(String name, GameMode mode) {
+        return Commands.literal(name)
+                .executes(context -> run(context.getSource(), () -> setLobbyMode(context.getSource(), mode)));
+    }
+
+    private static void setLobbyMode(CommandSourceStack source, GameMode mode) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        data.lobbySettings().mode(mode);
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
+    }
+
+    private static void adjustLobbyDifficulty(CommandSourceStack source, String tierName, int delta) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        DifficultyTier tier = DifficultyTier.valueOf(tierName.toUpperCase(java.util.Locale.ROOT));
+        data.lobbySettings().adjust(tier, delta);
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
+    }
+
+    private static void showLobbySettings(CommandSourceStack source) {
+        var settings = NeoBingoSavedData.get(source.getServer()).lobbySettings();
+        source.sendSuccess(() -> Component.translatable(
+                "commands.neo_bingo.lobby.settings",
+                BingoModeText.displayName(settings.mode()),
+                settings.count(DifficultyTier.MAX), settings.count(DifficultyTier.S),
+                settings.count(DifficultyTier.A), settings.count(DifficultyTier.B),
+                settings.count(DifficultyTier.C), settings.count(DifficultyTier.D), settings.total()), false);
+    }
+
+    private static void previewLobbyCard(CommandSourceStack source) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        BingoSession session = requiredSession(data);
+        long seed = source.getLevel().getRandom().nextLong();
+        BingoCardDefinition definition = BingoCardDefinitions.current();
+        session.reroll(definition.size(), BingoCardDefinitions.objectives(data.lobbySettings().distribution(), seed), seed);
+        data.store(session);
+        NeoBingoNetwork.syncAllCards(session, source.getServer().getPlayerList().getPlayers());
+        announce(source, Component.translatable("commands.neo_bingo.lobby.preview.success", seed));
+    }
+
+    private static void startConfigured(CommandSourceStack source) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        var settings = data.lobbySettings();
+        long seed = data.restoreSession().flatMap(BingoSession::seed)
+                .orElseGet(() -> source.getLevel().getRandom().nextLong());
+        if (settings.mode() == GameMode.RANKED) {
+            startRanked(source, 900, seed, settings.distribution());
+        } else {
+            start(source, seed, settings.mode(), settings.distribution());
+        }
+    }
+
+    private static void requireLobby(NeoBingoSavedData data) {
+        data.restoreSession().ifPresent(session -> {
+            if (session.state() != SessionState.LOBBY) {
+                throw failure("commands.neo_bingo.error.invalid_request");
+            }
+        });
     }
 
     private static void join(CommandSourceStack source, String teamName) throws Exception {

@@ -209,10 +209,19 @@ public final class NeoBingoGameTests {
                 randomizedPlayerTeam.equals(randomized.roster().teamOf(secondPlayerId).orElseThrow()),
                 "两名玩家随机分入两队时应位于不同队伍");
         server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack(), "neobingo reroll difficulty s 43");
+                server.createCommandSourceStack(), "neobingo lobby settings adjust s 1");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings adjust d -1");
+        helper.assertValueEqual(data.lobbySettings().count(dev.cleanroom.neobingo.domain.DifficultyTier.S), 4,
+                "设置书命令应能单独增加 S 难度数量");
+        helper.assertValueEqual(data.lobbySettings().count(dev.cleanroom.neobingo.domain.DifficultyTier.D), 6,
+                "设置书命令应能单独减少 D 难度数量");
+        helper.assertValueEqual(data.lobbySettings().total(), 25, "调整后的六档数量合计应为 25");
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
-                data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "刷新棋盘后应保持大厅状态");
-        server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo start 42");
+                data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
+        long previewSeed = data.restoreSession().orElseThrow().seed().orElseThrow();
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby start");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo status");
 
         BingoSession running = data.restoreSession().orElseThrow();
@@ -220,7 +229,7 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(
                 running.roster().teamOf(playerId).orElseThrow(), randomizedPlayerTeam, "开局后应保留随机分队结果");
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
-        helper.assertValueEqual(running.seed().orElseThrow(), 43L, "开局应沿用大厅中预生成棋盘的种子");
+        helper.assertValueEqual(running.seed().orElseThrow(), previewSeed, "开局应沿用大厅中预览棋盘的种子");
         var matchWorlds = RuntimeMatchWorldManager.active().orElseThrow();
         helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
         helper.assertTrue(
@@ -237,7 +246,7 @@ public final class NeoBingoGameTests {
                 "比赛下界的返回传送门应回到比赛主世界");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo reroll");
         helper.assertValueEqual(
-                data.restoreSession().orElseThrow().seed().orElseThrow(), 43L, "游戏过程中不得刷新棋盘");
+                data.restoreSession().orElseThrow().seed().orElseThrow(), previewSeed, "游戏过程中不得刷新棋盘");
 
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo end");
         helper.assertValueEqual(

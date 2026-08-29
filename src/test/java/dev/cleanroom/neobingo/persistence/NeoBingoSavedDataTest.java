@@ -38,6 +38,7 @@ class NeoBingoSavedDataTest {
         data.lobbySettings().toggleNightVision();
         data.lobbySettings().toggleKeepInventory();
         data.lobbySettings().toggleTeamChest();
+        data.lobbySettings().adjustTeamChestRows(2);
         data.lobbySettings().adjustStarterItem("minecraft:bread", 8);
         data.lobbySettingsChanged();
         assertTrue(data.isDirty());
@@ -53,6 +54,7 @@ class NeoBingoSavedDataTest {
         assertTrue(loaded.lobbySettings().nightVision());
         assertTrue(loaded.lobbySettings().keepInventory());
         assertTrue(loaded.lobbySettings().teamChest());
+        assertEquals(5, loaded.lobbySettings().teamChestRows());
         assertEquals(8, loaded.lobbySettings().starterItems().get("minecraft:bread"));
 
         loaded.clear();

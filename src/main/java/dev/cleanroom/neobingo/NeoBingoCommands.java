@@ -165,6 +165,10 @@ public final class NeoBingoCommands {
                                 .executes(context -> run(context.getSource(), () -> adjustSpawnDistance(
                                         context.getSource(),
                                         IntegerArgumentType.getInteger(context, "delta_chunks"))))))
+                .then(Commands.literal("team_chest_rows")
+                        .then(Commands.argument("delta", IntegerArgumentType.integer(-6, 6))
+                                .executes(context -> run(context.getSource(), () -> adjustTeamChestRows(
+                                        context.getSource(), IntegerArgumentType.getInteger(context, "delta"))))))
                 .then(Commands.literal("toggle")
                         .then(Commands.argument("rule", StringArgumentType.word())
                                 .executes(context -> run(context.getSource(), () -> toggleLobbyRule(
@@ -209,7 +213,7 @@ public final class NeoBingoCommands {
                 settings.count(DifficultyTier.C), settings.count(DifficultyTier.D), settings.total(),
                 settings.timedSeconds() / 60, settings.teamSpawnDistanceChunks(),
                 settingState(settings.nightVision()), settingState(settings.keepInventory()),
-                settingState(settings.teamChest())), false);
+                settingState(settings.teamChest()), settings.teamChestRows()), false);
     }
 
     private static Component settingState(boolean enabled) {
@@ -228,6 +232,14 @@ public final class NeoBingoCommands {
         NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
         requireLobby(data);
         data.lobbySettings().adjustTeamSpawnDistanceChunks(deltaChunks);
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
+    }
+
+    private static void adjustTeamChestRows(CommandSourceStack source, int delta) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        data.lobbySettings().adjustTeamChestRows(delta);
         data.lobbySettingsChanged();
         showLobbySettings(source);
     }

@@ -8,3 +8,7 @@ MDK. Gradle wrapper files retain their own notices and licenses.
 `difficulty_tiers.json` is adapted from the `all_items.tierlist.json` data in
 Yet Another Bingo 2.2.4 by HorrificDev, licensed under LGPL-3.0. A copy of that
 license is included in `docs/licenses/YET_ANOTHER_BINGO-LGPL-3.0.txt`.
+
+The persistent, configurable team-chest behavior is inspired by
+YetAnotherBingo-TeamChest by ImCZFy, licensed under the MIT License:
+https://github.com/ImCZFy/YetAnotherBingo-TeamChest

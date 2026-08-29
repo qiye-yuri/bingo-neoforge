@@ -229,6 +229,8 @@ public final class NeoBingoGameTests {
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo lobby settings toggle team_chest");
         server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings team_chest_rows 1");
+        server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:bread 4");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
@@ -253,7 +255,16 @@ public final class NeoBingoGameTests {
                 "开局时应向每名参赛玩家发放书中配置的初始物资");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo teamchest");
         helper.assertTrue(player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu,
-                "开启队伍箱后玩家应能打开共享六行箱子");
+                "开启队伍箱后玩家应能打开共享箱子");
+        helper.assertValueEqual(((net.minecraft.world.inventory.ChestMenu) player.containerMenu).getRowCount(), 4,
+                "队伍箱应使用管理书配置的行数");
+        TeamId currentTeam = running.roster().teamOf(playerId).orElseThrow();
+        dev.cleanroom.neobingo.persistence.TeamChestSavedData.get(server)
+                .inventory(currentTeam, 4).setItem(0, new net.minecraft.world.item.ItemStack(Items.BREAD));
+        helper.assertTrue(dev.cleanroom.neobingo.world.MatchGameplayRules
+                        .teamChestObjectives(server, currentTeam)
+                        .contains(new dev.cleanroom.neobingo.domain.ObjectiveId("minecraft:bread")),
+                "队伍箱中的物品应能参与 Bingo 目标判定");
         player.closeContainer();
         var firstSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(playerId).orElseThrow());
         var secondSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(secondPlayerId).orElseThrow());

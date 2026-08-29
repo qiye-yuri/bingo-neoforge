@@ -9,6 +9,7 @@ import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.rule.InventoryPresenceRule;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import dev.cleanroom.neobingo.network.NeoBingoNetwork;
+import dev.cleanroom.neobingo.world.MatchGameplayRules;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,10 +46,14 @@ public final class InventoryClaimTicker {
             if (session.roster().teamOf(playerId).isEmpty()) {
                 continue;
             }
+            Set<dev.cleanroom.neobingo.domain.ObjectiveId> observed = new LinkedHashSet<>(
+                    ServerInventoryObjectiveReader.read(player));
+            TeamId playerTeam = session.roster().teamOf(playerId).orElseThrow();
+            observed.addAll(MatchGameplayRules.teamChestObjectives(server, playerTeam));
             ClaimBatchResult result = ObjectiveClaimService.claimCompleted(
                     session,
                     playerId,
-                    ServerInventoryObjectiveReader.read(player),
+                    observed,
                     InventoryPresenceRule.INSTANCE);
             if (result.claimedTiles().isEmpty()) {
                 continue;

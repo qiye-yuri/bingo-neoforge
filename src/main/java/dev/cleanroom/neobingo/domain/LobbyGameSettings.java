@@ -13,6 +13,7 @@ public final class LobbyGameSettings {
     private boolean nightVision;
     private boolean keepInventory;
     private boolean teamChest;
+    private int teamChestRows;
     private final Map<String, Integer> starterItems = new LinkedHashMap<>();
 
     public LobbyGameSettings() {
@@ -22,11 +23,11 @@ public final class LobbyGameSettings {
                 DifficultyTier.A, 4,
                 DifficultyTier.B, 5,
                 DifficultyTier.C, 6,
-                DifficultyTier.D, 7), 900, 8, false, false, false, Map.of());
+                DifficultyTier.D, 7), 900, 8, false, false, false, 3, Map.of());
     }
 
     public LobbyGameSettings(GameMode mode, Map<DifficultyTier, Integer> counts) {
-        this(mode, counts, 900, 8, false, false, false, Map.of());
+        this(mode, counts, 900, 8, false, false, false, 3, Map.of());
     }
 
     public LobbyGameSettings(
@@ -34,13 +35,14 @@ public final class LobbyGameSettings {
             Map<DifficultyTier, Integer> counts,
             int timedSeconds,
             int teamSpawnDistanceChunks) {
-        this(mode, counts, timedSeconds, teamSpawnDistanceChunks, false, false, false, Map.of());
+        this(mode, counts, timedSeconds, teamSpawnDistanceChunks, false, false, false, 3, Map.of());
     }
 
     public LobbyGameSettings(
             GameMode mode, Map<DifficultyTier, Integer> counts,
             int timedSeconds, int teamSpawnDistanceChunks,
             boolean nightVision, boolean keepInventory, boolean teamChest,
+            int teamChestRows,
             Map<String, Integer> starterItems) {
         this.mode = mode;
         for (DifficultyTier tier : DifficultyTier.values()) {
@@ -51,6 +53,7 @@ public final class LobbyGameSettings {
         this.nightVision = nightVision;
         this.keepInventory = keepInventory;
         this.teamChest = teamChest;
+        this.teamChestRows = Math.clamp(teamChestRows, 1, 6);
         starterItems.forEach((item, count) -> {
             if (count > 0) this.starterItems.put(item, Math.clamp(count, 1, 64));
         });
@@ -110,6 +113,11 @@ public final class LobbyGameSettings {
     public void toggleNightVision() { nightVision = !nightVision; }
     public void toggleKeepInventory() { keepInventory = !keepInventory; }
     public void toggleTeamChest() { teamChest = !teamChest; }
+    public int teamChestRows() { return teamChestRows; }
+    public int adjustTeamChestRows(int delta) {
+        teamChestRows = Math.clamp(teamChestRows + delta, 1, 6);
+        return teamChestRows;
+    }
 
     public int adjustStarterItem(String itemId, int delta) {
         int value = Math.clamp(starterItems.getOrDefault(itemId, 0) + delta, 0, 64);

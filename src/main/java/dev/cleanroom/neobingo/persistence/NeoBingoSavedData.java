@@ -66,6 +66,7 @@ public final class NeoBingoSavedData extends SavedData {
         settingsTag.putBoolean("night_vision", lobbySettings.nightVision());
         settingsTag.putBoolean("keep_inventory", lobbySettings.keepInventory());
         settingsTag.putBoolean("team_chest", lobbySettings.teamChest());
+        settingsTag.putInt("team_chest_rows", lobbySettings.teamChestRows());
         CompoundTag kitTag = new CompoundTag();
         lobbySettings.starterItems().forEach(kitTag::putInt);
         settingsTag.put("starter_items", kitTag);
@@ -100,6 +101,7 @@ public final class NeoBingoSavedData extends SavedData {
                         settingsTag.getBoolean("night_vision"),
                         settingsTag.getBoolean("keep_inventory"),
                         settingsTag.getBoolean("team_chest"),
+                        settingsTag.contains("team_chest_rows") ? settingsTag.getInt("team_chest_rows") : 3,
                         starterItems);
             } catch (IllegalArgumentException ignored) {
                 data.lobbySettings = new LobbyGameSettings();

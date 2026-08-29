@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 9;
+    private static final int BOOK_VERSION = 10;
 
     private BingoSettingsBook() {
     }
@@ -172,6 +172,9 @@ public final class BingoSettingsBook {
                 .append("\n\n").append(button("book.neo_bingo.rule.night_vision", "/neobingo lobby settings toggle night_vision"))
                 .append("\n\n").append(button("book.neo_bingo.rule.keep_inventory", "/neobingo lobby settings toggle keep_inventory"))
                 .append("\n\n").append(button("book.neo_bingo.rule.team_chest", "/neobingo lobby settings toggle team_chest"))
+                .append("\n").append(Component.translatable("book.neo_bingo.team_chest_rows"))
+                .append(" ").append(literalButton("−", "/neobingo lobby settings team_chest_rows -1"))
+                .append(" ").append(literalButton("+", "/neobingo lobby settings team_chest_rows 1"))
                 .append("\n\n").append(Component.translatable("book.neo_bingo.rule_hint").withStyle(ChatFormatting.DARK_GRAY));
     }
 

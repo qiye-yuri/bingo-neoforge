@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 10;
+    private static final int BOOK_VERSION = 11;
 
     private BingoSettingsBook() {
     }
@@ -180,6 +180,13 @@ public final class BingoSettingsBook {
 
     private static Component starterKitPage() {
         MutableComponent page = Component.translatable("book.neo_bingo.starter_kit").withStyle(ChatFormatting.BOLD);
+        page.append("\n").append(Component.translatable("book.neo_bingo.starter_kit.held"));
+        page.append("\n").append(literalButton("−8", "/neobingo lobby settings kit held -8"))
+                .append(" ").append(literalButton("−1", "/neobingo lobby settings kit held -1"))
+                .append(" ").append(literalButton("+1", "/neobingo lobby settings kit held 1"))
+                .append(" ").append(literalButton("+8", "/neobingo lobby settings kit held 8"));
+        page.append("\n").append(button("book.neo_bingo.starter_kit.clear",
+                "/neobingo lobby settings kit clear"));
         appendKitRow(page, "item.minecraft.bread", "minecraft:bread", 4);
         appendKitRow(page, "block.minecraft.oak_log", "minecraft:oak_log", 8);
         appendKitRow(page, "block.minecraft.cobblestone", "minecraft:cobblestone", 16);

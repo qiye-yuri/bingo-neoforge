@@ -131,6 +131,11 @@ public final class ClientBingoHud {
             showSetting(minecraft, Component.translatable(
                     "hud.neo_bingo.scale.changed", BingoClientConfig.adjustScale(10)));
         }
+        while (ClientKeyMappings.OPEN_TEAM_CHEST.consumeClick()) {
+            if (minecraft.getConnection() != null && minecraft.player != null && minecraft.screen == null) {
+                minecraft.getConnection().sendCommand("neobingo teamchest");
+            }
+        }
     }
 
     private static void showSetting(Minecraft minecraft, Component message) {

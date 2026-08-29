@@ -174,6 +174,13 @@ public final class NeoBingoCommands {
                                 .executes(context -> run(context.getSource(), () -> toggleLobbyRule(
                                         context.getSource(), StringArgumentType.getString(context, "rule"))))))
                 .then(Commands.literal("kit")
+                        .then(Commands.literal("clear")
+                                .executes(context -> run(context.getSource(), () -> clearStarterItems(
+                                        context.getSource()))))
+                        .then(Commands.literal("held")
+                                .then(Commands.argument("delta", IntegerArgumentType.integer(-64, 64))
+                                        .executes(context -> run(context.getSource(), () -> adjustHeldStarterItem(
+                                                context.getSource(), IntegerArgumentType.getInteger(context, "delta"))))))
                         .then(Commands.argument("item", ResourceLocationArgument.id())
                                 .then(Commands.argument("delta", IntegerArgumentType.integer(-64, 64))
                                         .executes(context -> run(context.getSource(), () -> adjustStarterItem(
@@ -265,6 +272,21 @@ public final class NeoBingoCommands {
         int count = data.lobbySettings().adjustStarterItem(id.toString(), delta);
         data.lobbySettingsChanged();
         source.sendSuccess(() -> Component.translatable("commands.neo_bingo.lobby.kit", id.toString(), count), false);
+    }
+
+    private static void adjustHeldStarterItem(CommandSourceStack source, int delta) throws Exception {
+        ServerPlayer player = source.getPlayerOrException();
+        if (player.getMainHandItem().isEmpty()) throw failure("commands.neo_bingo.error.invalid_request");
+        adjustStarterItem(source,
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(player.getMainHandItem().getItem()), delta);
+    }
+
+    private static void clearStarterItems(CommandSourceStack source) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        data.lobbySettings().clearStarterItems();
+        data.lobbySettingsChanged();
+        source.sendSuccess(() -> Component.translatable("commands.neo_bingo.lobby.kit.cleared"), false);
     }
 
     private static void openTeamChest(CommandSourceStack source) throws Exception {

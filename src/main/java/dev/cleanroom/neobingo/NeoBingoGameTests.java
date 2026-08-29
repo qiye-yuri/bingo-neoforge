@@ -232,6 +232,10 @@ public final class NeoBingoGameTests {
                 server.createCommandSourceStack(), "neobingo lobby settings team_chest_rows 1");
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:bread 4");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings kit minecraft:cobblestone 8");
+        helper.assertValueEqual(data.lobbySettings().starterItems().get("minecraft:cobblestone"), 8,
+                "初始物资命令应支持任意已注册物品");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
@@ -246,6 +250,9 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(running.game().orElseThrow().mode(), GameMode.STANDARD, "开局命令应选择标准模式");
         helper.assertValueEqual(running.seed().orElseThrow(), previewSeed, "开局应沿用大厅中预览棋盘的种子");
         var matchWorlds = RuntimeMatchWorldManager.active().orElseThrow();
+        helper.assertTrue(Math.abs(matchWorlds.overworldSpawn().getX()) >= 6144
+                        || Math.abs(matchWorlds.overworldSpawn().getZ()) >= 6144,
+                "每局比赛应分配远离固定大厅的新地图区域");
         helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
         helper.assertValueEqual(player.getRespawnDimension(), matchWorlds.overworldKey(),
                 "比赛中死亡后应在本局主世界复活");

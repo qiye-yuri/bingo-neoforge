@@ -14,6 +14,7 @@ public final class ClientKeyMappings {
     private static final int DEFAULT_POSITION_KEY = 80;
     private static final int DEFAULT_SCALE_DOWN_KEY = 91;
     private static final int DEFAULT_SCALE_UP_KEY = 93;
+    private static final int DEFAULT_TEAM_CHEST_KEY = 71;
     public static final KeyMapping TOGGLE_HUD = new KeyMapping(
             "key.neo_bingo.toggle_hud",
             DEFAULT_HUD_KEY,
@@ -24,6 +25,8 @@ public final class ClientKeyMappings {
             "key.neo_bingo.hud_scale_down", DEFAULT_SCALE_DOWN_KEY, "key.categories.neo_bingo");
     public static final KeyMapping INCREASE_HUD_SCALE = new KeyMapping(
             "key.neo_bingo.hud_scale_up", DEFAULT_SCALE_UP_KEY, "key.categories.neo_bingo");
+    public static final KeyMapping OPEN_TEAM_CHEST = new KeyMapping(
+            "key.neo_bingo.open_team_chest", DEFAULT_TEAM_CHEST_KEY, "key.categories.neo_bingo");
 
     private ClientKeyMappings() {
     }
@@ -34,5 +37,6 @@ public final class ClientKeyMappings {
         event.register(CYCLE_HUD_POSITION);
         event.register(DECREASE_HUD_SCALE);
         event.register(INCREASE_HUD_SCALE);
+        event.register(OPEN_TEAM_CHEST);
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.BlockPos;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -85,15 +86,16 @@ public final class RuntimeMatchWorldManager {
         if (nether == null || end == null) {
             throw new IllegalStateException("服务器未加载原版下界或末地");
         }
-        int centerX = 0;
-        int centerZ = 0;
+        BlockPos center = allocateMatchRegion(matchId, seed);
+        int centerX = center.getX();
+        int centerZ = center.getZ();
         Map<TeamId, net.minecraft.core.BlockPos> teamSpawns = createTeamSpawns(
                 overworld, teams, spawnDistanceChunks, centerX, centerZ);
-        int spawnY = overworld.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, centerX, centerZ);
+        BlockPos worldSpawn = findSafeSpawn(overworld, centerX, centerZ);
         active = new MatchWorldGroup(
                 matchId, seed, Level.OVERWORLD, Level.NETHER, Level.END,
-                new net.minecraft.core.BlockPos(centerX, spawnY, centerZ), teamSpawns, overworld, nether, end);
-        NeoBingo.LOGGER.info("已启用原版比赛世界区域：中心 {}, {}", centerX, centerZ);
+                worldSpawn, teamSpawns, overworld, nether, end);
+        NeoBingo.LOGGER.info("已创建运行时比赛地图区域：中心 {}, {}，种子标识 {}", centerX, centerZ, seed);
         return active;
     }
 
@@ -154,7 +156,7 @@ public final class RuntimeMatchWorldManager {
         NeoBingo.LOGGER.info("已结束原版比赛世界区域：{}", group.matchId());
     }
 
-    /** 以 (0,0) 为中心在网格上分布队伍，横纵相邻间距为配置的区块数。 */
+    /** 在本局独立区域的中心附近分布队伍，横纵相邻间距为配置的区块数。 */
     private static Map<TeamId, net.minecraft.core.BlockPos> createTeamSpawns(
             ServerLevel level,
             Collection<TeamId> teams,
@@ -174,9 +176,47 @@ public final class RuntimeMatchWorldManager {
             int row = index / columns;
             int x = centerX + (int) Math.round((column - (columns - 1) / 2.0) * spacing);
             int z = centerZ + (int) Math.round((row - (rows - 1) / 2.0) * spacing);
-            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            result.put(sorted.get(index), new net.minecraft.core.BlockPos(x, y, z));
+            BlockPos spawn = findSafeSpawn(level, x, z);
+            level.getChunk(spawn.getX() >> 4, spawn.getZ() >> 4);
+            result.put(sorted.get(index), spawn);
         }
         return result;
+    }
+
+    /**
+     * 原项目通过重启后删除世界文件获得新地图；这里在不重启服务器的前提下，
+     * 在原版要塞覆盖范围内轮换 48 个地图槽位，同时保留地狱门和末地门可达性。
+     */
+    static BlockPos allocateMatchRegion(long matchId, long seed) {
+        int slot = (int) Math.floorMod(matchId, 48);
+        // 7×7 网格去掉中央大厅槽位；连续 48 局不会在本次服务进程中重复。
+        int raw = slot >= 24 ? slot + 1 : slot;
+        int gridX = raw % 7 - 3;
+        int gridZ = raw / 7 - 3;
+        return new BlockPos(gridX * 6144, 0, gridZ * 6144);
+    }
+
+    /** 在目标点附近寻找脚下可站立且头顶无阻挡的地表。 */
+    private static BlockPos findSafeSpawn(ServerLevel level, int targetX, int targetZ) {
+        for (int radius = 0; radius <= 8; radius++) {
+            for (int offsetX = -radius; offsetX <= radius; offsetX++) {
+                for (int offsetZ = -radius; offsetZ <= radius; offsetZ++) {
+                    if (radius > 0 && Math.abs(offsetX) != radius && Math.abs(offsetZ) != radius) continue;
+                    int x = targetX + offsetX * 16;
+                    int z = targetZ + offsetZ * 16;
+                    int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                    BlockPos position = new BlockPos(x, y, z);
+                    if (level.getBlockState(position.below()).isFaceSturdy(level, position.below(),
+                            net.minecraft.core.Direction.UP)
+                            && level.getBlockState(position).getCollisionShape(level, position).isEmpty()
+                            && level.getBlockState(position.above()).getCollisionShape(level, position.above()).isEmpty()
+                            && level.getFluidState(position).isEmpty()) {
+                        return position;
+                    }
+                }
+            }
+        }
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, targetX, targetZ);
+        return new BlockPos(targetX, y, targetZ);
     }
 }

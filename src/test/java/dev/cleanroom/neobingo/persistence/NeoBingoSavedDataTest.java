@@ -57,6 +57,9 @@ class NeoBingoSavedDataTest {
         assertEquals(5, loaded.lobbySettings().teamChestRows());
         assertEquals(8, loaded.lobbySettings().starterItems().get("minecraft:bread"));
 
+        loaded.lobbySettings().clearStarterItems();
+        assertTrue(loaded.lobbySettings().starterItems().isEmpty());
+
         loaded.clear();
         assertTrue(loaded.isDirty());
         assertFalse(loaded.restoreSession().isPresent());

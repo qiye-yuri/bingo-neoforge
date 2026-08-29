@@ -126,4 +126,6 @@ public final class LobbyGameSettings {
     }
 
     public Map<String, Integer> starterItems() { return Map.copyOf(starterItems); }
+
+    public void clearStarterItems() { starterItems.clear(); }
 }

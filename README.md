@@ -38,9 +38,9 @@ The book now places all six exact tier counts on one page. Each click changes on
 
 Its match-options page also adjusts timed-mode duration in minutes and team respawn spacing in chunks. Team spawn and death-respawn points use a grid centered on `(0,0)`. Matches use the server's continuously loaded vanilla dimensions for full obsidian-portal compatibility.
 
-Additional book toggles enable night vision for everyone, per-match keep-inventory behavior, and a shared chest for each team. Its capacity is configurable from one to six rows; chest contents count toward automatic Bingo claims and are cleared when the next match starts. The starter-kit page adjusts bread, logs, cobblestone, torches, iron, and cooked beef distributed to every participant at match start. A five-second portal fallback performs the verified match-local Nether transition if vanilla portal timing does not fire.
+Additional book toggles enable night vision for everyone, per-match keep-inventory behavior, and a shared chest for each team. Its capacity is configurable from one to six rows; chest contents count toward automatic Bingo claims and are cleared when the next match starts. Modded clients open it with the rebindable `G` key. The starter-kit page can add or remove any registered item by holding it in the main hand, clear the whole kit, and retain shortcuts for common supplies. A five-second portal fallback performs the verified match-local Nether transition if vanilla portal timing does not fire.
 
-Starting does not restart the server. Participants enter the match region centered on `(0,0)` and use the server's vanilla Overworld, Nether, and End. Ending, winning, or reaching the ranked timeout returns participants to the lobby.
+Starting does not restart the server. Matches rotate through 48 map slots spaced 6144 blocks apart inside vanilla stronghold coverage, then search nearby terrain for safe team spawn surfaces. The fixed lobby stays at the server spawn; keeping regions inside the stronghold rings preserves both Nether and End progression. Ending, winning, or reaching the ranked timeout returns participants to the lobby.
 
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.
 

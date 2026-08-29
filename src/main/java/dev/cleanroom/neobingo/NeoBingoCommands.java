@@ -82,20 +82,7 @@ public final class NeoBingoCommands {
                         .executes(context -> run(context.getSource(), () -> showTeamManager(context.getSource()))))
                 .then(Commands.literal("lobby")
                         .requires(NeoBingoPermissions::canAdmin)
-                        .then(Commands.literal("settings")
-                                .executes(context -> run(context.getSource(), () -> showLobbySettings(context.getSource())))
-                                .then(Commands.literal("mode")
-                                        .then(lobbyMode("standard", GameMode.STANDARD))
-                                        .then(lobbyMode("lockout", GameMode.LOCKOUT))
-                                        .then(lobbyMode("hidden", GameMode.HIDDEN))
-                                        .then(lobbyMode("ranked", GameMode.RANKED)))
-                                .then(Commands.literal("adjust")
-                                        .then(Commands.argument("tier", StringArgumentType.word())
-                                                .then(Commands.argument("delta", IntegerArgumentType.integer(-25, 25))
-                                                        .executes(context -> run(context.getSource(), () -> adjustLobbyDifficulty(
-                                                                context.getSource(),
-                                                                StringArgumentType.getString(context, "tier"),
-                                                                IntegerArgumentType.getInteger(context, "delta"))))))))
+                        .then(lobbySettingsCommands())
                         .then(Commands.literal("preview")
                                 .executes(context -> run(context.getSource(), () -> previewLobbyCard(context.getSource()))))
                         .then(Commands.literal("refresh")
@@ -147,6 +134,33 @@ public final class NeoBingoCommands {
                         .executes(context -> run(context.getSource(), () -> end(context.getSource())))));
     }
 
+    private static LiteralArgumentBuilder<CommandSourceStack> lobbySettingsCommands() {
+        return Commands.literal("settings")
+                .executes(context -> run(context.getSource(), () -> showLobbySettings(context.getSource())))
+                .then(Commands.literal("mode")
+                        .then(lobbyMode("standard", GameMode.STANDARD))
+                        .then(lobbyMode("lockout", GameMode.LOCKOUT))
+                        .then(lobbyMode("hidden", GameMode.HIDDEN))
+                        .then(lobbyMode("ranked", GameMode.RANKED)))
+                .then(Commands.literal("adjust")
+                        .then(Commands.argument("tier", StringArgumentType.word())
+                                .then(Commands.argument("delta", IntegerArgumentType.integer(-25, 25))
+                                        .executes(context -> run(context.getSource(), () -> adjustLobbyDifficulty(
+                                                context.getSource(),
+                                                StringArgumentType.getString(context, "tier"),
+                                                IntegerArgumentType.getInteger(context, "delta")))))))
+                .then(Commands.literal("time")
+                        .then(Commands.argument("delta_seconds", IntegerArgumentType.integer(-86_400, 86_400))
+                                .executes(context -> run(context.getSource(), () -> adjustTimedSeconds(
+                                        context.getSource(),
+                                        IntegerArgumentType.getInteger(context, "delta_seconds"))))))
+                .then(Commands.literal("spawn_distance")
+                        .then(Commands.argument("delta_chunks", IntegerArgumentType.integer(-128, 128))
+                                .executes(context -> run(context.getSource(), () -> adjustSpawnDistance(
+                                        context.getSource(),
+                                        IntegerArgumentType.getInteger(context, "delta_chunks"))))));
+    }
+
     private static LiteralArgumentBuilder<CommandSourceStack> lobbyMode(String name, GameMode mode) {
         return Commands.literal(name)
                 .executes(context -> run(context.getSource(), () -> setLobbyMode(context.getSource(), mode)));
@@ -176,7 +190,24 @@ public final class NeoBingoCommands {
                 BingoModeText.displayName(settings.mode()),
                 settings.count(DifficultyTier.MAX), settings.count(DifficultyTier.S),
                 settings.count(DifficultyTier.A), settings.count(DifficultyTier.B),
-                settings.count(DifficultyTier.C), settings.count(DifficultyTier.D), settings.total()), false);
+                settings.count(DifficultyTier.C), settings.count(DifficultyTier.D), settings.total(),
+                settings.timedSeconds() / 60, settings.teamSpawnDistanceChunks()), false);
+    }
+
+    private static void adjustTimedSeconds(CommandSourceStack source, int deltaSeconds) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        data.lobbySettings().adjustTimedSeconds(deltaSeconds);
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
+    }
+
+    private static void adjustSpawnDistance(CommandSourceStack source, int deltaChunks) {
+        NeoBingoSavedData data = NeoBingoSavedData.get(source.getServer());
+        requireLobby(data);
+        data.lobbySettings().adjustTeamSpawnDistanceChunks(deltaChunks);
+        data.lobbySettingsChanged();
+        showLobbySettings(source);
     }
 
     private static void previewLobbyCard(CommandSourceStack source) {
@@ -196,7 +227,7 @@ public final class NeoBingoCommands {
         long seed = data.restoreSession().flatMap(BingoSession::seed)
                 .orElseGet(() -> source.getLevel().getRandom().nextLong());
         if (settings.mode() == GameMode.RANKED) {
-            startRanked(source, 900, seed, settings.distribution());
+            startRanked(source, settings.timedSeconds(), seed, settings.distribution());
         } else {
             start(source, seed, settings.mode(), settings.distribution());
         }
@@ -536,12 +567,13 @@ public final class NeoBingoCommands {
     }
 
     private static void enterMatchWorlds(CommandSourceStack source, BingoSession session) {
-        RuntimeMatchWorldManager.create(source.getServer(), session.seed().orElseThrow());
+        int spawnDistance = NeoBingoSavedData.get(source.getServer()).lobbySettings().teamSpawnDistanceChunks();
+        RuntimeMatchWorldManager.create(
+                source.getServer(), session.seed().orElseThrow(), session.roster().teamSizes().keySet(), spawnDistance);
         try {
             for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
-                if (session.roster().teamOf(new PlayerId(player.getUUID())).isPresent()) {
-                    RuntimeMatchWorldManager.sendToMatch(player);
-                }
+                session.roster().teamOf(new PlayerId(player.getUUID()))
+                        .ifPresent(team -> RuntimeMatchWorldManager.sendToMatch(player, team));
             }
         } catch (RuntimeException exception) {
             RuntimeMatchWorldManager.finish(source.getServer());

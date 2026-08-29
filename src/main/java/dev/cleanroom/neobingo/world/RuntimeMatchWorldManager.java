@@ -2,6 +2,7 @@ package dev.cleanroom.neobingo.world;
 
 import com.google.common.collect.ImmutableList;
 import dev.cleanroom.neobingo.NeoBingo;
+import dev.cleanroom.neobingo.domain.TeamId;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +24,10 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.Random;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Collection;
+import java.util.Comparator;
 import net.minecraft.world.entity.RelativeMovement;
 
 /** 在服务器运行期间创建并卸载单局独占的三维度世界组。 */
@@ -60,7 +64,29 @@ public final class RuntimeMatchWorldManager {
         return Optional.empty();
     }
 
-    public static synchronized MatchWorldGroup create(MinecraftServer server, long matchId, long seed) {
+    /** 向原版传送门逻辑提供等价的三维度键，修正运行时维度的方向与搜索半径判断。 */
+    public static synchronized ResourceKey<Level> vanillaPortalDimension(ServerLevel level) {
+        if (active == null) {
+            return level.dimension();
+        }
+        if (level == active.nether()) {
+            return Level.NETHER;
+        }
+        if (level == active.end()) {
+            return Level.END;
+        }
+        if (level == active.overworld()) {
+            return Level.OVERWORLD;
+        }
+        return level.dimension();
+    }
+
+    public static synchronized MatchWorldGroup create(
+            MinecraftServer server,
+            long matchId,
+            long seed,
+            Collection<TeamId> teams,
+            int spawnDistanceChunks) {
         if (active != null) {
             throw new IllegalStateException("已有运行中的比赛世界组");
         }
@@ -73,25 +99,28 @@ public final class RuntimeMatchWorldManager {
         ServerLevel nether = createLevel(server, netherKey, LevelStem.NETHER, false);
         ServerLevel end = createLevel(server, endKey, LevelStem.END, false);
         end.setDragonFight(new EndDragonFight(end, seed, EndDragonFight.Data.DEFAULT));
-        Random random = new Random(seed);
-        int spawnX = random.nextInt(-8000, 8001);
-        int spawnZ = random.nextInt(-8000, 8001);
-        int spawnY = overworld.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnX, spawnZ);
+        Map<TeamId, net.minecraft.core.BlockPos> teamSpawns = createTeamSpawns(
+                overworld, teams, spawnDistanceChunks);
+        int spawnY = overworld.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 0, 0);
         active = new MatchWorldGroup(
                 matchId, seed, overworldKey, netherKey, endKey,
-                new net.minecraft.core.BlockPos(spawnX, spawnY, spawnZ), overworld, nether, end);
+                new net.minecraft.core.BlockPos(0, spawnY, 0), teamSpawns, overworld, nether, end);
         NeoBingo.LOGGER.info("已创建运行时比赛世界组：{}", root);
         return active;
     }
 
-    public static MatchWorldGroup create(MinecraftServer server, long seed) {
-        return create(server, MATCH_SEQUENCE.incrementAndGet(), seed);
+    public static MatchWorldGroup create(
+            MinecraftServer server,
+            long seed,
+            Collection<TeamId> teams,
+            int spawnDistanceChunks) {
+        return create(server, MATCH_SEQUENCE.incrementAndGet(), seed, teams, spawnDistanceChunks);
     }
 
-    public static void sendToMatch(ServerPlayer player) {
+    public static void sendToMatch(ServerPlayer player, TeamId team) {
         MatchWorldGroup group = active().orElseThrow(() -> new IllegalStateException("比赛世界尚未创建"));
         ServerLevel level = group.overworld();
-        var base = group.overworldSpawn();
+        var base = group.teamSpawns().getOrDefault(team, group.overworldSpawn());
         level.getChunk(base.getX() >> 4, base.getZ() >> 4);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base.getX(), base.getZ());
         // 强制将个人重生点绑定到本局主世界，死亡后不会回到大厅。
@@ -180,5 +209,29 @@ public final class RuntimeMatchWorldManager {
         return ResourceKey.create(
                 Registries.DIMENSION,
                 ResourceLocation.fromNamespaceAndPath(NeoBingo.MOD_ID, path));
+    }
+
+    /** 以 (0,0) 为中心在网格上分布队伍，横纵相邻间距为配置的区块数。 */
+    private static Map<TeamId, net.minecraft.core.BlockPos> createTeamSpawns(
+            ServerLevel level,
+            Collection<TeamId> teams,
+            int distanceChunks) {
+        var sorted = teams.stream().sorted(Comparator.comparing(TeamId::value)).toList();
+        Map<TeamId, net.minecraft.core.BlockPos> result = new LinkedHashMap<>();
+        if (sorted.isEmpty()) {
+            return result;
+        }
+        int columns = (int) Math.ceil(Math.sqrt(sorted.size()));
+        int rows = (int) Math.ceil((double) sorted.size() / columns);
+        int spacing = Math.clamp(distanceChunks, 1, 128) * 16;
+        for (int index = 0; index < sorted.size(); index++) {
+            int column = index % columns;
+            int row = index / columns;
+            int x = (int) Math.round((column - (columns - 1) / 2.0) * spacing);
+            int z = (int) Math.round((row - (rows - 1) / 2.0) * spacing);
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            result.put(sorted.get(index), new net.minecraft.core.BlockPos(x, y, z));
+        }
+        return result;
     }
 }

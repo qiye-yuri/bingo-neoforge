@@ -7,6 +7,8 @@ import java.util.Map;
 public final class LobbyGameSettings {
     private final EnumMap<DifficultyTier, Integer> counts = new EnumMap<>(DifficultyTier.class);
     private GameMode mode;
+    private int timedSeconds;
+    private int teamSpawnDistanceChunks;
 
     public LobbyGameSettings() {
         this(GameMode.STANDARD, Map.of(
@@ -15,14 +17,24 @@ public final class LobbyGameSettings {
                 DifficultyTier.A, 4,
                 DifficultyTier.B, 5,
                 DifficultyTier.C, 6,
-                DifficultyTier.D, 7));
+                DifficultyTier.D, 7), 900, 8);
     }
 
     public LobbyGameSettings(GameMode mode, Map<DifficultyTier, Integer> counts) {
+        this(mode, counts, 900, 8);
+    }
+
+    public LobbyGameSettings(
+            GameMode mode,
+            Map<DifficultyTier, Integer> counts,
+            int timedSeconds,
+            int teamSpawnDistanceChunks) {
         this.mode = mode;
         for (DifficultyTier tier : DifficultyTier.values()) {
             this.counts.put(tier, Math.clamp(counts.getOrDefault(tier, 0), 0, DifficultyDistribution.CARD_SLOTS));
         }
+        this.timedSeconds = Math.clamp(timedSeconds, 60, 86_400);
+        this.teamSpawnDistanceChunks = Math.clamp(teamSpawnDistanceChunks, 1, 128);
     }
 
     public GameMode mode() {
@@ -53,5 +65,23 @@ public final class LobbyGameSettings {
 
     public DifficultyDistribution distribution() {
         return new DifficultyDistribution(counts);
+    }
+
+    public int timedSeconds() {
+        return timedSeconds;
+    }
+
+    public int adjustTimedSeconds(int delta) {
+        timedSeconds = Math.clamp(timedSeconds + delta, 60, 86_400);
+        return timedSeconds;
+    }
+
+    public int teamSpawnDistanceChunks() {
+        return teamSpawnDistanceChunks;
+    }
+
+    public int adjustTeamSpawnDistanceChunks(int delta) {
+        teamSpawnDistanceChunks = Math.clamp(teamSpawnDistanceChunks + delta, 1, 128);
+        return teamSpawnDistanceChunks;
     }
 }

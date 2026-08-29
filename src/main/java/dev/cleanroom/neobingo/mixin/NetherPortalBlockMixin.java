@@ -17,6 +17,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class NetherPortalBlockMixin {
     @Redirect(
             method = "getPortalDestination",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;dimension()Lnet/minecraft/resources/ResourceKey;"))
+    private ResourceKey<Level> neoBingo$redirectDimensionIdentity(ServerLevel level) {
+        return RuntimeMatchWorldManager.vanillaPortalDimension(level);
+    }
+
+    @Redirect(
+            method = "getPortalDestination",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;getLevel(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;"))
     private ServerLevel neoBingo$redirectPortal(
             MinecraftServer server,

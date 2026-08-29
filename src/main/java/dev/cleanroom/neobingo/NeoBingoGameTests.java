@@ -217,6 +217,13 @@ public final class NeoBingoGameTests {
         helper.assertValueEqual(data.lobbySettings().count(dev.cleanroom.neobingo.domain.DifficultyTier.D), 6,
                 "设置书命令应能单独减少 D 难度数量");
         helper.assertValueEqual(data.lobbySettings().total(), 25, "调整后的六档数量合计应为 25");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings time 60");
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack(), "neobingo lobby settings spawn_distance 1");
+        helper.assertValueEqual(data.lobbySettings().timedSeconds(), 960, "设置书命令应能调整计时时长");
+        helper.assertValueEqual(data.lobbySettings().teamSpawnDistanceChunks(), 9,
+                "设置书命令应能按区块调整队伍复活点间距");
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
@@ -234,10 +241,20 @@ public final class NeoBingoGameTests {
         helper.assertTrue(player.serverLevel() == matchWorlds.overworld(), "开局后参赛玩家应进入比赛主世界");
         helper.assertValueEqual(player.getRespawnDimension(), matchWorlds.overworldKey(),
                 "比赛中死亡后应在本局主世界复活");
+        var firstSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(playerId).orElseThrow());
+        var secondSpawn = matchWorlds.teamSpawns().get(running.roster().teamOf(secondPlayerId).orElseThrow());
+        helper.assertValueEqual(Math.abs(firstSpawn.getX() - secondSpawn.getX())
+                        + Math.abs(firstSpawn.getZ() - secondSpawn.getZ()),
+                9 * 16, "两队复活点应按配置的区块距离分布在原点周围");
         helper.assertTrue(
                 RuntimeMatchWorldManager.portalTarget(matchWorlds.overworld(), net.minecraft.world.level.Level.NETHER)
                         .orElseThrow() == matchWorlds.nether(),
                 "比赛主世界的下界传送门应进入比赛下界");
+        var portalTransition = ((net.minecraft.world.level.block.NetherPortalBlock)
+                net.minecraft.world.level.block.Blocks.NETHER_PORTAL)
+                .getPortalDestination(matchWorlds.overworld(), player, firstSpawn);
+        helper.assertTrue(portalTransition != null && portalTransition.newLevel() == matchWorlds.nether(),
+                "黑曜石下界传送门应能创建本局下界出口并进入本局下界");
         helper.assertTrue(
                 RuntimeMatchWorldManager.portalTarget(matchWorlds.overworld(), net.minecraft.world.level.Level.END)
                         .orElseThrow() == matchWorlds.end(),

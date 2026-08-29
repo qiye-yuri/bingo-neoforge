@@ -36,6 +36,8 @@ On login, each player receives a vanilla interactive Bingo settings book for cho
 
 The book now places all six exact tier counts on one page. Each click changes one item without leaving the current book page; when the total is 25, the upcoming card can be generated, refreshed, and started from the lobby. Refreshing remains unavailable after a game starts, and the separate full-card screen and `/neobingo card` command have been removed.
 
+Its match-options page also adjusts timed-mode duration in minutes and team respawn spacing in chunks. Team spawn and death-respawn points use a grid centered on `(0,0)`, while obsidian portals identify the runtime Nether as a vanilla-equivalent Nether and create match-local exits in both directions.
+
 Starting through the command system creates a match-exclusive overworld, Nether, and End group without restarting the server, then moves joined players to a fresh seed-selected region. Nether and End portals are routed within that group. Ending the game, winning, or reaching the ranked timeout returns players to the lobby and saves, unregisters, and closes the three runtime levels.
 
 A successful server load logs `Neo Bingo initialized` and the loaded 5×5 Bingo card definition.

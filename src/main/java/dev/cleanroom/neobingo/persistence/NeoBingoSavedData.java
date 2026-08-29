@@ -61,6 +61,8 @@ public final class NeoBingoSavedData extends SavedData {
         }
         CompoundTag settingsTag = new CompoundTag();
         settingsTag.putString("mode", lobbySettings.mode().name());
+        settingsTag.putInt("timed_seconds", lobbySettings.timedSeconds());
+        settingsTag.putInt("team_spawn_distance_chunks", lobbySettings.teamSpawnDistanceChunks());
         for (DifficultyTier tier : DifficultyTier.values()) {
             settingsTag.putInt(tier.name().toLowerCase(), lobbySettings.count(tier));
         }
@@ -81,7 +83,11 @@ public final class NeoBingoSavedData extends SavedData {
             }
             try {
                 data.lobbySettings = new LobbyGameSettings(
-                        GameMode.valueOf(settingsTag.getString("mode")), counts);
+                        GameMode.valueOf(settingsTag.getString("mode")),
+                        counts,
+                        settingsTag.contains("timed_seconds") ? settingsTag.getInt("timed_seconds") : 900,
+                        settingsTag.contains("team_spawn_distance_chunks")
+                                ? settingsTag.getInt("team_spawn_distance_chunks") : 8);
             } catch (IllegalArgumentException ignored) {
                 data.lobbySettings = new LobbyGameSettings();
             }

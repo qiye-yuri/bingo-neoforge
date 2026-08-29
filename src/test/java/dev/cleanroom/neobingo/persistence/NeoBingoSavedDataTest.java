@@ -33,6 +33,8 @@ class NeoBingoSavedDataTest {
         data.lobbySettings().mode(GameMode.HIDDEN);
         data.lobbySettings().adjust(DifficultyTier.S, 1);
         data.lobbySettings().adjust(DifficultyTier.D, -1);
+        data.lobbySettings().adjustTimedSeconds(300);
+        data.lobbySettings().adjustTeamSpawnDistanceChunks(4);
         data.lobbySettingsChanged();
         assertTrue(data.isDirty());
 
@@ -42,6 +44,8 @@ class NeoBingoSavedDataTest {
         assertEquals(GameMode.HIDDEN, loaded.lobbySettings().mode());
         assertEquals(4, loaded.lobbySettings().count(DifficultyTier.S));
         assertEquals(6, loaded.lobbySettings().count(DifficultyTier.D));
+        assertEquals(1200, loaded.lobbySettings().timedSeconds());
+        assertEquals(12, loaded.lobbySettings().teamSpawnDistanceChunks());
 
         loaded.clear();
         assertTrue(loaded.isDirty());

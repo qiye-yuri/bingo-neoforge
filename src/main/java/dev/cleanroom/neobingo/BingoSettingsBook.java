@@ -21,7 +21,7 @@ import java.util.List;
 public final class BingoSettingsBook {
     private static final String MARKER = "neo_bingo_settings_book";
     private static final String VERSION_MARKER = "neo_bingo_settings_book_version";
-    private static final int BOOK_VERSION = 7;
+    private static final int BOOK_VERSION = 8;
 
     private BingoSettingsBook() {
     }
@@ -94,6 +94,7 @@ public final class BingoSettingsBook {
                 .append("\n").append(button("book.neo_bingo.mode.hidden", "/neobingo lobby settings mode hidden"))
                 .append("\n").append(button("book.neo_bingo.mode.ranked.short", "/neobingo lobby settings mode ranked")));
         pages.add(difficultyPage());
+        pages.add(matchOptionsPage());
         pages.add(Component.translatable("book.neo_bingo.lobby_card").withStyle(ChatFormatting.BOLD)
                 .append("\n\n").append(button("book.neo_bingo.action.settings", "/neobingo lobby settings"))
                 .append("\n").append(button("book.neo_bingo.action.preview", "/neobingo lobby preview"))
@@ -140,6 +141,24 @@ public final class BingoSettingsBook {
                     .append(literalButton("+", prefix + "1"));
         }
         page.append("\n\n").append(Component.translatable("book.neo_bingo.adjust.hint")
+                .withStyle(ChatFormatting.DARK_GRAY));
+        return page;
+    }
+
+    private static Component matchOptionsPage() {
+        MutableComponent page = Component.translatable("book.neo_bingo.match_options")
+                .withStyle(ChatFormatting.BOLD);
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.timed_minutes"));
+        page.append("\n").append(literalButton("−5", "/neobingo lobby settings time -300"))
+                .append(" ").append(literalButton("−1", "/neobingo lobby settings time -60"))
+                .append(" ").append(literalButton("+1", "/neobingo lobby settings time 60"))
+                .append(" ").append(literalButton("+5", "/neobingo lobby settings time 300"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.spawn_distance"));
+        page.append("\n").append(literalButton("−4", "/neobingo lobby settings spawn_distance -4"))
+                .append(" ").append(literalButton("−1", "/neobingo lobby settings spawn_distance -1"))
+                .append(" ").append(literalButton("+1", "/neobingo lobby settings spawn_distance 1"))
+                .append(" ").append(literalButton("+4", "/neobingo lobby settings spawn_distance 4"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.options_hint")
                 .withStyle(ChatFormatting.DARK_GRAY));
         return page;
     }

@@ -67,7 +67,7 @@ public final class BingoSettingsBook {
         }
     }
 
-    private static ItemStack create(LobbyGameSettings settings) {
+    static ItemStack create(LobbyGameSettings settings) {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         CompoundTag marker = new CompoundTag();
         marker.putBoolean(MARKER, true);
@@ -83,7 +83,7 @@ public final class BingoSettingsBook {
         return book;
     }
 
-    private static boolean isSettingsBook(ItemStack stack) {
+    public static boolean isSettingsBook(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data != null && data.contains(MARKER);
     }

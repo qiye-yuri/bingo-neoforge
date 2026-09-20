@@ -93,8 +93,6 @@ public final class NeoBingoCommands {
                 .then(Commands.literal("lobby")
                         .requires(NeoBingoPermissions::canAdmin)
                         .then(lobbySettingsCommands())
-                        .then(Commands.literal("preview")
-                                .executes(context -> run(context.getSource(), () -> previewLobbyCard(context.getSource()))))
                         .then(Commands.literal("refresh")
                                 .executes(context -> run(context.getSource(), () -> previewLobbyCard(context.getSource()))))
                         .then(Commands.literal("start")
@@ -221,6 +219,13 @@ public final class NeoBingoCommands {
 
     private static void showLobbySettings(CommandSourceStack source) {
         var settings = NeoBingoSavedData.get(source.getServer()).lobbySettings();
+        if (source.getEntity() instanceof ServerPlayer player) {
+            BingoSettingsBook.refresh(player);
+            player.displayClientMessage(Component.translatable(
+                    "commands.neo_bingo.lobby.settings.live",
+                    settings.total(), settings.timedSeconds() / 60,
+                    settings.teamSpawnDistanceChunks(), settings.teamChestRows()), true);
+        }
         source.sendSuccess(() -> Component.translatable(
                 "commands.neo_bingo.lobby.settings",
                 BingoModeText.displayName(settings.mode()),
@@ -690,8 +695,14 @@ public final class NeoBingoCommands {
             for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
                 session.roster().teamOf(new PlayerId(player.getUUID()))
                         .ifPresent(team -> {
+                            player.closeContainer();
+                            player.getInventory().clearContent();
+                            source.getServer().getCommands().performPrefixedCommand(
+                                    source.getServer().createCommandSourceStack(),
+                                    "advancement revoke " + player.getScoreboardName() + " everything");
                             RuntimeMatchWorldManager.sendToMatch(player, team);
                             MatchGameplayRules.preparePlayer(player, team);
+                            BingoSettingsBook.giveIfMissing(player);
                         });
             }
         } catch (RuntimeException exception) {
@@ -729,6 +740,7 @@ public final class NeoBingoCommands {
         TeamId team = session.roster().teamOf(new PlayerId(player.getUUID())).orElseThrow();
         NeoBingoNetwork.syncTeamCard(
                 session, team, source.getServer().getPlayerList().getPlayers());
+        BingoClaimAnnouncements.broadcast(source.getServer(), session, team, result.claimedTiles());
         source.sendSuccess(
                 () -> Component.translatable("commands.neo_bingo.claim.success", result.claimedTiles().size()),
                 true);

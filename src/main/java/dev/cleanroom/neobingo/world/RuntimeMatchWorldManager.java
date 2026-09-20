@@ -3,6 +3,7 @@ package dev.cleanroom.neobingo.world;
 import dev.cleanroom.neobingo.NeoBingo;
 import dev.cleanroom.neobingo.domain.TeamId;
 import dev.cleanroom.neobingo.domain.PlayerId;
+import dev.cleanroom.neobingo.BingoScoreboardTeams;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -141,6 +142,7 @@ public final class RuntimeMatchWorldManager {
                 if (participant && group.levels().contains(player.serverLevel())) {
                     returnToLobby(player);
                 }
+                if (participant) BingoScoreboardTeams.remove(player);
             }
             unload(server);
         });

@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.WrittenBookContent;
+import dev.cleanroom.neobingo.domain.LobbyGameSettings;
+import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.ArrayList;
@@ -39,12 +41,14 @@ public final class BingoSettingsBook {
                 continue;
             }
             if (settingsBookVersion(existing) >= BOOK_VERSION) {
+                player.getInventory().setItem(slot,
+                        create(NeoBingoSavedData.get(player.getServer()).lobbySettings()));
                 return false;
             }
-            player.getInventory().setItem(slot, create());
+            player.getInventory().setItem(slot, create(NeoBingoSavedData.get(player.getServer()).lobbySettings()));
             return true;
         }
-        ItemStack book = create();
+        ItemStack book = create(NeoBingoSavedData.get(player.getServer()).lobbySettings());
         if (!player.getInventory().add(book)) {
             player.drop(book, false, false);
         }
@@ -52,6 +56,18 @@ public final class BingoSettingsBook {
     }
 
     public static ItemStack create() {
+        return create(new LobbyGameSettings());
+    }
+
+    public static void refresh(ServerPlayer player) {
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (isSettingsBook(player.getInventory().getItem(slot))) {
+                player.getInventory().setItem(slot, create(NeoBingoSavedData.get(player.getServer()).lobbySettings()));
+            }
+        }
+    }
+
+    private static ItemStack create(LobbyGameSettings settings) {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         CompoundTag marker = new CompoundTag();
         marker.putBoolean(MARKER, true);
@@ -62,7 +78,7 @@ public final class BingoSettingsBook {
                 Filterable.passThrough("Bingo Settings"),
                 "Neo Bingo",
                 0,
-                pages().stream().map(Filterable::passThrough).toList(),
+                pages(settings).stream().map(Filterable::passThrough).toList(),
                 true));
         return book;
     }
@@ -77,7 +93,7 @@ public final class BingoSettingsBook {
         return data == null ? 0 : data.copyTag().getInt(VERSION_MARKER);
     }
 
-    private static List<Component> pages() {
+    private static List<Component> pages(LobbyGameSettings settings) {
         List<Component> pages = new ArrayList<>();
         pages.add(Component.translatable("book.neo_bingo.intro")
                 .append("\n\n")
@@ -89,17 +105,18 @@ public final class BingoSettingsBook {
                 .append("\n")
                 .append(button("book.neo_bingo.team.yellow", "/neobingo join yellow")));
         pages.add(Component.translatable("book.neo_bingo.mode.title").withStyle(ChatFormatting.BOLD)
+                .append("\n").append(Component.translatable("book.neo_bingo.mode.current",
+                        dev.cleanroom.neobingo.presentation.BingoModeText.displayName(settings.mode())))
                 .append("\n\n").append(button("book.neo_bingo.mode.standard", "/neobingo lobby settings mode standard"))
                 .append("\n").append(button("book.neo_bingo.mode.lockout", "/neobingo lobby settings mode lockout"))
                 .append("\n").append(button("book.neo_bingo.mode.hidden", "/neobingo lobby settings mode hidden"))
                 .append("\n").append(button("book.neo_bingo.mode.ranked.short", "/neobingo lobby settings mode ranked")));
-        pages.add(difficultyPage());
-        pages.add(matchOptionsPage());
-        pages.add(ruleOptionsPage());
+        pages.add(difficultyPage(settings));
+        pages.add(matchOptionsPage(settings));
+        pages.add(ruleOptionsPage(settings));
         pages.add(starterKitPage());
         pages.add(Component.translatable("book.neo_bingo.lobby_card").withStyle(ChatFormatting.BOLD)
                 .append("\n\n").append(button("book.neo_bingo.action.settings", "/neobingo lobby settings"))
-                .append("\n").append(button("book.neo_bingo.action.preview", "/neobingo lobby preview"))
                 .append("\n").append(button("book.neo_bingo.action.refresh", "/neobingo lobby refresh"))
                 .append("\n\n").append(button("book.neo_bingo.action.start", "/neobingo lobby start")));
         pages.add(Component.translatable("book.neo_bingo.tools")
@@ -134,12 +151,13 @@ public final class BingoSettingsBook {
     }
 
     /** 六档数量集中在同一页，每次点击精确增减一个格子。 */
-    private static Component difficultyPage() {
+    private static Component difficultyPage(LobbyGameSettings settings) {
         MutableComponent page = Component.translatable("book.neo_bingo.difficulty_editor_all")
                 .withStyle(ChatFormatting.BOLD);
         for (String tier : List.of("max", "s", "a", "b", "c", "d")) {
             String prefix = "/neobingo lobby settings adjust " + tier + " ";
-            page.append("\n").append(Component.literal(tier.toUpperCase() + " "))
+            page.append("\n").append(Component.literal(tier.toUpperCase() + " "
+                            + settings.count(dev.cleanroom.neobingo.domain.DifficultyTier.valueOf(tier.toUpperCase())) + " "))
                     .append(literalButton("−", prefix + "-1"))
                     .append(" ")
                     .append(literalButton("+", prefix + "1"));
@@ -149,15 +167,17 @@ public final class BingoSettingsBook {
         return page;
     }
 
-    private static Component matchOptionsPage() {
+    private static Component matchOptionsPage(LobbyGameSettings settings) {
         MutableComponent page = Component.translatable("book.neo_bingo.match_options")
                 .withStyle(ChatFormatting.BOLD);
-        page.append("\n\n").append(Component.translatable("book.neo_bingo.timed_minutes"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.timed_minutes"))
+                .append(" " + settings.timedSeconds() / 60);
         page.append("\n").append(literalButton("−5", "/neobingo lobby settings time -300"))
                 .append(" ").append(literalButton("−1", "/neobingo lobby settings time -60"))
                 .append(" ").append(literalButton("+1", "/neobingo lobby settings time 60"))
                 .append(" ").append(literalButton("+5", "/neobingo lobby settings time 300"));
-        page.append("\n\n").append(Component.translatable("book.neo_bingo.spawn_distance"));
+        page.append("\n\n").append(Component.translatable("book.neo_bingo.spawn_distance"))
+                .append(" " + settings.teamSpawnDistanceChunks());
         page.append("\n").append(literalButton("−4", "/neobingo lobby settings spawn_distance -4"))
                 .append(" ").append(literalButton("−1", "/neobingo lobby settings spawn_distance -1"))
                 .append(" ").append(literalButton("+1", "/neobingo lobby settings spawn_distance 1"))
@@ -167,12 +187,16 @@ public final class BingoSettingsBook {
         return page;
     }
 
-    private static Component ruleOptionsPage() {
+    private static Component ruleOptionsPage(LobbyGameSettings settings) {
         return Component.translatable("book.neo_bingo.rule_options").withStyle(ChatFormatting.BOLD)
                 .append("\n\n").append(button("book.neo_bingo.rule.night_vision", "/neobingo lobby settings toggle night_vision"))
+                .append(" ").append(Component.translatable(settings.nightVision() ? "book.neo_bingo.enabled" : "book.neo_bingo.disabled"))
                 .append("\n\n").append(button("book.neo_bingo.rule.keep_inventory", "/neobingo lobby settings toggle keep_inventory"))
+                .append(" ").append(Component.translatable(settings.keepInventory() ? "book.neo_bingo.enabled" : "book.neo_bingo.disabled"))
                 .append("\n\n").append(button("book.neo_bingo.rule.team_chest", "/neobingo lobby settings toggle team_chest"))
+                .append(" ").append(Component.translatable(settings.teamChest() ? "book.neo_bingo.enabled" : "book.neo_bingo.disabled"))
                 .append("\n").append(Component.translatable("book.neo_bingo.team_chest_rows"))
+                .append(" " + settings.teamChestRows())
                 .append(" ").append(literalButton("−", "/neobingo lobby settings team_chest_rows -1"))
                 .append(" ").append(literalButton("+", "/neobingo lobby settings team_chest_rows 1"))
                 .append("\n\n").append(Component.translatable("book.neo_bingo.rule_hint").withStyle(ChatFormatting.DARK_GRAY));

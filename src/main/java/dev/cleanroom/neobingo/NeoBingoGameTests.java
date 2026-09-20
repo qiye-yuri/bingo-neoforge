@@ -234,7 +234,9 @@ public final class NeoBingoGameTests {
         starterInventory.clearContent();
         starterInventory.setItem(0, new net.minecraft.world.item.ItemStack(Items.BREAD, 4));
         starterInventory.setItem(1, new net.minecraft.world.item.ItemStack(Items.COBBLESTONE, 8));
-        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby preview");
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(Items.DIAMOND));
+        secondPlayer.getInventory().add(new net.minecraft.world.item.ItemStack(Items.DIAMOND));
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "neobingo lobby refresh");
         helper.assertValueEqual(
                 data.restoreSession().orElseThrow().state(), SessionState.LOBBY, "大厅预览棋盘后应保持大厅状态");
         long previewSeed = data.restoreSession().orElseThrow().seed().orElseThrow();
@@ -258,6 +260,12 @@ public final class NeoBingoGameTests {
                 "开启全员夜视后参赛玩家应获得夜视效果");
         helper.assertTrue(player.getInventory().countItem(Items.BREAD) >= 4,
                 "开局时应向每名参赛玩家发放初始物资背包的完整副本");
+        helper.assertValueEqual(player.getInventory().countItem(Items.DIAMOND), 0,
+                "开局时应清除玩家旧背包物品");
+        helper.assertValueEqual(secondPlayer.getInventory().countItem(Items.DIAMOND), 0,
+                "开局时应清除每名参赛玩家的旧背包物品");
+        helper.assertTrue(secondPlayer.getInventory().countItem(Items.BREAD) >= 4,
+                "每名参赛玩家应得到相同初始物资");
         server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "neobingo teamchest");
         helper.assertTrue(player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu,
                 "开启队伍箱后玩家应能打开共享箱子");
@@ -303,6 +311,8 @@ public final class NeoBingoGameTests {
                 SessionState.FINISHED,
                 "结束命令应持久化已结束状态");
         helper.assertTrue(player.serverLevel() == server.overworld(), "结束游戏后应将玩家送回大厅主世界");
+        helper.assertTrue(server.getScoreboard().getPlayersTeam(player.getScoreboardName()) == null,
+                "结束游戏后 Tab 名称不应保留队伍颜色");
         helper.assertValueEqual(player.getRespawnDimension(), server.overworld().dimension(),
                 "结束游戏后应恢复大厅重生点");
         data.clear();

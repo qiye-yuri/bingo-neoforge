@@ -3,6 +3,7 @@ package dev.cleanroom.neobingo;
 import dev.cleanroom.neobingo.domain.BingoSession;
 import dev.cleanroom.neobingo.domain.PlayerId;
 import dev.cleanroom.neobingo.domain.TeamId;
+import dev.cleanroom.neobingo.domain.SessionState;
 import dev.cleanroom.neobingo.persistence.NeoBingoSavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -28,12 +29,17 @@ public final class BingoScoreboardTeams {
             return;
         }
         NeoBingoSavedData.get(player.getServer()).restoreSession()
+                .filter(session -> session.state() != SessionState.FINISHED)
                 .flatMap(session -> session.roster().teamOf(new PlayerId(player.getUUID())))
                 .ifPresent(team -> assign(player, team));
     }
 
     public static void synchronize(BingoSession session, Iterable<ServerPlayer> players) {
         for (ServerPlayer player : players) {
+            if (session.state() == SessionState.FINISHED) {
+                remove(player);
+                continue;
+            }
             session.roster().teamOf(new PlayerId(player.getUUID()))
                     .ifPresentOrElse(team -> assign(player, team), () -> remove(player));
         }

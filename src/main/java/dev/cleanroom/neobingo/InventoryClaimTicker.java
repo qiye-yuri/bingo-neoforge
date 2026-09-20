@@ -61,6 +61,7 @@ public final class InventoryClaimTicker {
             changed = true;
             TeamId team = session.roster().teamOf(playerId).orElseThrow();
             changedTeams.add(team);
+            BingoClaimAnnouncements.broadcast(server, session, team, result.claimedTiles());
             player.sendSystemMessage(Component.translatable(
                     "commands.neo_bingo.claim.automatic", result.claimedTiles().size()));
             if (result.state() == SessionState.FINISHED) {

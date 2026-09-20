@@ -1,6 +1,7 @@
 {
   "commands.neo_bingo.card.title": "Bingo 卡（队伍 %s）",
   "commands.neo_bingo.claim.automatic": "自动认领了 %s 个 Bingo 格子",
+  "commands.neo_bingo.claim.objective": "%s 队完成了 %s",
   "commands.neo_bingo.claim.empty": "物品栏中没有可新认领的目标",
   "commands.neo_bingo.claim.success": "已为队伍认领 %s 个格子",
   "commands.neo_bingo.end.success": "Bingo 游戏已结束",
@@ -30,6 +31,7 @@
   "book.neo_bingo.mode.ranked": "竞速模式（%s 分钟）",
   "book.neo_bingo.mode.ranked.short": "竞速模式（15 分钟）",
   "book.neo_bingo.mode.title": "下一局游戏模式",
+  "book.neo_bingo.mode.current": "当前模式：%s",
   "book.neo_bingo.difficulty_editor": "调整 %s 难度数量",
   "book.neo_bingo.difficulty_editor_all": "各难度物品数量",
   "book.neo_bingo.match_options": "对局参数",
@@ -100,6 +102,7 @@
   "commands.neo_bingo.mode.standard": "标准",
   "commands.neo_bingo.reroll.success": "已重新生成 Bingo 卡，种子：%s",
   "commands.neo_bingo.lobby.settings": "下一局设置：模式 %s；MAX/S/A/B/C/D = %s/%s/%s/%s/%s/%s；合计 %s/25；计时 %s 分钟；出生间距 %s 区块；夜视 %s；死亡不掉落 %s；队伍箱 %s（%s 行）",
+  "commands.neo_bingo.lobby.settings.live": "目标 %s/25 · 计时 %s 分钟 · 出生间距 %s 区块 · 队伍箱 %s 行",
   "commands.neo_bingo.lobby.kit": "初始物资 %s：每人 %s 个",
   "commands.neo_bingo.lobby.kit.cleared": "已清空全部初始物资",
   "commands.neo_bingo.lobby.preview.success": "大厅中的下一局 Bingo 棋盘已刷新，种子：%s",
